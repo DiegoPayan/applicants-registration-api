@@ -7,7 +7,7 @@ export class User {
     id: number;
 
     @Column()
-    username: string;
+    clave: string;
 
     @Column()
     nombre: string;
@@ -19,7 +19,7 @@ export class User {
     apellidoMaterno: string;
 
     @Column()
-    status: string;
+    estatus: string;
 
     @Column({name: 'created_at'})
     fechaCreacion: Date;

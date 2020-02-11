@@ -65,7 +65,6 @@ CREATE TABLE aspirantes (
 CREATE TABLE usuarios (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     clave VARCHAR(4) NOT NULL DEFAULT '',
-    password VARCHAR(50) NOT NULL DEFAULT '',
     nombre VARCHAR(100) NOT NULL DEFAULT '',
     apellidoPaterno VARCHAR(50) NOT NULL DEFAULT '',
     apellidoMaterno VARCHAR(50) NOT NULL DEFAULT '',

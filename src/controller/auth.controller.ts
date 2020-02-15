@@ -8,7 +8,7 @@ const usuariosRepository = new UsuariosRepository();
 router.post('/', (req, res) => {
     let clave = req.body.clave;
     usuariosRepository.getByClave(clave).then((response) => {
-        res.send(response);
+        res.status(response.status).send(response);
     });
 });
 

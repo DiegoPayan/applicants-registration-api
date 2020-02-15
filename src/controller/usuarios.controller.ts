@@ -7,7 +7,7 @@ const usuariosRepository = new UsuariosRepository();
 
 router.get('/', (req, res) => {
     usuariosRepository.getAll().then((response) => {
-        res.send(response);  
+        res.status(response.status).send(response);  
     });
 });
 

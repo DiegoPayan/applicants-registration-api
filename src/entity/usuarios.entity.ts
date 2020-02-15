@@ -19,6 +19,9 @@ export class Usuarios {
     apellidoMaterno: string;
 
     @Column()
+    permisos: string;
+
+    @Column()
     estatus: string;
 
     @Column({ name: 'created_at' })

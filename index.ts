@@ -11,7 +11,10 @@ const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+app.set('refreshToken', []);
+
 app.get('/', function (req, res) { res.send('Hola Mundo') });
+app.use('/aspirantes', protectedRoute, require('./src/controller/aspirantes.controller'));
 app.use('/usuarios', protectedRoute, require('./src/controller/usuarios.controller'));
 app.use('/auth', require('./src/controller/auth.controller'));
 

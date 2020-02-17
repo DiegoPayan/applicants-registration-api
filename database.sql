@@ -45,7 +45,6 @@ CREATE TABLE aspirantes (
     apellidoPaterno VARCHAR(50) NOT NULL DEFAULT '',
     apellidoMaterno VARCHAR(50) NOT NULL DEFAULT '',
     listado ENUM('INSTITUTO', 'SINDICATO', '') NOT NULL DEFAULT '',
-    fechaAlta DATE NOT NULL DEFAULT '1900-01-01',
     total INT(10) UNSIGNED DEFAULT 0 NOT NULL,
     estatus ENUM('ACTIVO', 'INACTIVO') NOT NULL DEFAULT 'ACTIVO',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -58,7 +57,7 @@ CREATE TABLE aspirantes (
         REFERENCES puesto (id),
     FOREIGN KEY (idZona)
         REFERENCES zona (id),
-    INDEX IDX_fecha (fechaAlta ASC),
+    INDEX IDX_fecha (created_at ASC),
     INDEX IDX_total (total DESC)
 );
 

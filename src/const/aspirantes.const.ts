@@ -1,0 +1,1 @@
+export const NO_ASPIRANTES = 'No se encontraron aspirantes';

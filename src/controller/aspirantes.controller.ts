@@ -11,4 +11,10 @@ router.get('/', (req, res) => {
   });
 });
 
+router.get('/lista', (req, res) => {
+  aspirantesRepository.getOrdenedList().then((response) => {
+    res.send(response);
+  });
+});
+
 module.exports = router;

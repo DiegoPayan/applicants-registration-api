@@ -20,4 +20,13 @@ export class AspirantesRepository {
     return response;
   }
 
+  async getOrdenedList(): Promise<Response> {
+    let response = new Response();
+    let aspirantes = await getManager().getRepository(Aspirantes).find();
+
+    console.log(aspirantes);
+
+    return response;
+  }
+
 }

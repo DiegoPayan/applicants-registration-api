@@ -1,35 +1,22 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToOne, JoinColumn } from 'typeorm';
-import { Estudios } from '../entity/estudios.entity';
-import { Rama } from '../entity/rama.entity';
-import { Puesto } from '../entity/puesto.entity';
-import { Zona } from '../entity/zona.entity';
-import { Puntaje } from '../entity/puntaje.entity';
 
 @Entity('aspirantes')
 export class Aspirantes {
 
   @PrimaryGeneratedColumn()
-  id: number;
+  id: Number;
 
-  @OneToOne(() => Estudios)
-  @JoinColumn({ name: 'idEstudios' })
-  estudios: Estudios
+  @Column()
+  idEstudios: Number
 
-  @OneToOne(() => Rama)
-  @JoinColumn({ name: 'idRama' })
-  rama: Rama
+  @Column()
+  idRama: Number
 
-  @OneToOne(() => Puesto)
-  @JoinColumn({ name: 'idPuesto' })
-  puesto: Puesto
+  @Column()
+  idPuesto: Number
 
-  @OneToOne(() => Zona)
-  @JoinColumn({ name: 'idZona' })
-  zona: Zona
-
-  @OneToOne(() => Puntaje)
-  @JoinColumn({ name: 'idPuntaje' })
-  puntaje: Puntaje
+  @Column()
+  idZona: Number
 
   @Column()
   folio: String
@@ -46,13 +33,16 @@ export class Aspirantes {
   @Column()
   listado: String
 
-  @Column()
-  total: number
+  @Column({ name: 'fecha' })
+  fecha: Date = new Date()
 
   @Column()
-  estatus: String
+  total: Number = 0
+
+  @Column()
+  estatus: String = 'ACTIVO'
 
   @Column({ name: 'created_at' })
-  fechaCreacion: Date;
+  fechaCreacion: Date = new Date()
 
 }

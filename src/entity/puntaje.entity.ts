@@ -4,18 +4,24 @@ import {Entity, Column, PrimaryGeneratedColumn} from 'typeorm';
 export class Puntaje {
   
   @PrimaryGeneratedColumn()
-  id: number;
+  id: Number;
 
   @Column()
-  escolaridad: number
+  idAspirante: Number
 
   @Column()
-  parentesco: number
+  escolaridad: Number = 0
 
   @Column()
-  tiempoServicio: number
+  parentesco: Number = 0
 
   @Column()
-  tiempoRegistro: number
+  tiempoServicio: Number = 0
+
+  @Column()
+  tiempoRegistro: Number = 0
+
+  @Column()
+  total: Number = 0
 
 }

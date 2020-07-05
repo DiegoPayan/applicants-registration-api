@@ -21,35 +21,48 @@ export class AspirantesRepository {
     return response;
   }
 
+  async getById(idAspirante): Promise<Response> {
+    let response = new Response();
+    let aspirante = await getManager().getRepository(AspirantesJoin).findOne({ id: idAspirante }, { relations: ["estudios", "rama", "puesto", "zona"] });
+    if (aspirante) {
+      let puntaje = await getManager().getRepository(Puntaje).findOne({ idAspirante });
+      if (puntaje) {
+        response.data = { aspirante, puntaje };
+        response.status = 200;
+      } else {
+        response.status = 400;
+        response.message = message.NO_PUNTAJE_ASPIRANTE;
+      }
+    } else {
+      response.status = 400;
+        response.message = message.NO_ASPIRANTE_POR_ID;
+    }
+    return response;
+  }
+
   async getOrdenedList(): Promise<Response> {
     let response = new Response();
     let aspirantes = await getManager().getRepository(AspirantesJoin).find({ relations: ["estudios", "rama", "puesto", "zona"] });
-    //await getManager().getRepository(AspirantesJoin).createQueryBuilder("aspirante").take(1).addOrderBy("aspirante.folio", "DESC");
+    //await getManager().getRepository(AspirantesJoin).createQueryBuilder("aspirante").take(20).skip(40).addOrderBy("aspirante.folio", "DESC");
     console.log(aspirantes);
 
     return response;
   }
 
-  async guardarAspirante(aspirante: Aspirantes, puntaje: Puntaje): Promise<Response> {
+  async save(aspirante: Aspirantes, puntaje: Puntaje): Promise<Response> {
     let response = new Response();
-    /*let queryAspirante = await getManager().getRepository(Aspirantes).createQueryBuilder("aspirante").take(1).addOrderBy("aspirante.folio", "DESC").getOne();
-    let nuevoFolio;
-    if (queryAspirante) {
-      let ultimoFolio = queryAspirante.folio.split('/');
-      nuevoFolio = `${ultimoFolio[0]}/${parseInt(ultimoFolio[1]) + 1}`;
-    }
-    aspirante.folio = nuevoFolio;*/
     let resultadoAspirante = await getManager().getRepository(Aspirantes).save(aspirante);
     if (resultadoAspirante) {
       puntaje.idAspirante = resultadoAspirante.id;
       let resultadoPuntaje = getManager().getRepository(Puntaje).save(puntaje);
       if (resultadoPuntaje) {
         response.data = resultadoAspirante;
+        response.data = message.SUCCESS_SAVE_ASPIRANTE;
         response.status = 200;
       }
     } else {
       response.status = 400;
-      response.message = message.NO_ASPIRANTES;
+      response.message = message.ERROR_GUARDAR_ASPIRANTE;
     }
     return response;
   }

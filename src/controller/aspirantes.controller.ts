@@ -12,6 +12,13 @@ router.get('/', (req, res) => {
   });
 });
 
+router.get('/:idAspirante', (req, res) => {
+  let idAspirante = req.params.idAspirante;
+  aspirantesRepository.getById(idAspirante).then((response) => {
+    res.status(response.status).send(response);
+  });
+});
+
 router.get('/lista', (req, res) => {
   aspirantesRepository.getOrdenedList().then((response) => {
     res.send(response);
@@ -22,7 +29,7 @@ router.post('/', (req, res) => {
   let aspirante = req.body.aspirante;
   let puntaje = req.body.puntaje;
   if (!isObjectEmpty(aspirante)) {
-    aspirantesRepository.guardarAspirante(aspirante, puntaje).then((response) => {
+    aspirantesRepository.save(aspirante, puntaje).then((response) => {
       res.send(response);
     });
   } else {

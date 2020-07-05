@@ -10,9 +10,9 @@ export class Estudios {
   nombre: string;
 
   @Column()
-  estatus: string;
+  estatus: string = 'ACTIVO';
 
   @Column({ name: 'created_at' })
-  fechaCreacion: Date;
+  fechaCreacion: Date = new Date();
 
 }

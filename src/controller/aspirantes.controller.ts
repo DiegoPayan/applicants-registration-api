@@ -19,8 +19,14 @@ router.get('/:idAspirante', (req, res) => {
   });
 });
 
-router.get('/lista', (req, res) => {
+router.get('/lista/ordenada', (req, res) => {
   aspirantesRepository.getOrdenedList().then((response) => {
+    res.send(response);
+  });
+});
+
+router.get('/nuevo/folio', (req, res) => {
+  aspirantesRepository.getFolio().then((response) => {
     res.send(response);
   });
 });
@@ -30,6 +36,18 @@ router.post('/', (req, res) => {
   let puntaje = req.body.puntaje;
   if (!isObjectEmpty(aspirante)) {
     aspirantesRepository.save(aspirante, puntaje).then((response) => {
+      res.send(response);
+    });
+  } else {
+    res.send('No se han recibido datos');
+  }
+});
+
+router.put('/:idAspirante', (req, res) => {
+  let aspirante = req.body;
+  let id = req.params.idAspirante;
+  if (!isObjectEmpty(aspirante)) {
+    aspirantesRepository.update(id, aspirante).then((response) => {
       res.send(response);
     });
   } else {

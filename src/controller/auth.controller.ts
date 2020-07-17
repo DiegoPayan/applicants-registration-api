@@ -25,7 +25,7 @@ router.post('/refresh', (req, res) => {
         let decoded = jwtDecode(oldToken);
         response = genToken(decoded.usuario);
     }
-    res.status(response.status).send(response);
+    res.status(response && response.status ? response.status : 403).send(response);
 });
 
 module.exports = router;

@@ -5,9 +5,9 @@ import * as message from '../const/estudios.const';
 
 export class EstudiosRepository {
 
-  async getAll(): Promise<Response> {
+  async getAll(query): Promise<Response> {
     let response = new Response();
-    let estudios = await getManager().getRepository(Estudios).find();
+    let estudios = await getManager().getRepository(Estudios).find({ where: query });
     if (estudios) {
       response.data = estudios;
       response.status = 200;

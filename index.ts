@@ -19,6 +19,7 @@ app.use('/api/aspirantes', protectedRoute, require('./src/controller/aspirantes.
 app.use('/api/estudios', protectedRoute, require('./src/controller/estudios.controller'));
 app.use('/api/puestos', protectedRoute, require('./src/controller/puesto.controller'));
 app.use('/api/ramas', protectedRoute, require('./src/controller/rama.controller'));
+app.use('/api/zonas', protectedRoute, require('./src/controller/zonas.controller'));
 app.use('/api/usuarios', protectedRoute, require('./src/controller/usuarios.controller'));
 app.use('/api/auth', require('./src/controller/auth.controller'));
 

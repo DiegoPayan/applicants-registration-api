@@ -31,6 +31,9 @@ export class Aspirantes {
   apellidoMaterno: String
 
   @Column()
+  subcomision: String
+
+  @Column()
   listado: String
 
   @Column({ name: 'fecha' })
@@ -38,6 +41,12 @@ export class Aspirantes {
 
   @Column()
   total: Number = 0
+
+  @Column()
+  nominacion: String = ''
+
+  @Column()
+  motivo_baja: String = ''
 
   @Column()
   estatus: String = 'ACTIVO'

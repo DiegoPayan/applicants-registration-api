@@ -6,7 +6,8 @@ import { EstudiosRepository } from '../repository/estudios.repository';
 const estudiosRepository = new EstudiosRepository();
 
 router.get('/', (req, res) => {
-  estudiosRepository.getAll().then((response) => {
+  let query = req.query;
+  estudiosRepository.getAll(query).then((response) => {
     res.status(response.status).send(response);
   });
 });

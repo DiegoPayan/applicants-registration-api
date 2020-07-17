@@ -63,9 +63,12 @@ CREATE TABLE aspirantes (
     nombre VARCHAR(100) NOT NULL DEFAULT '',
     apellidoPaterno VARCHAR(50) NOT NULL DEFAULT '',
     apellidoMaterno VARCHAR(50) NOT NULL DEFAULT '',
+    subcomision ENUM('DELEGACION', 'HOSPITAL REGIONAL', '') NOT NULL DEFAULT '',
     listado ENUM('INSTITUTO', 'SINDICATO', '') NOT NULL DEFAULT '',
     fecha TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     total INT(10) UNSIGNED DEFAULT 0 NOT NULL,
+    nominacion VARCHAR(200) NOT NULL DEFAULT '',
+    motivo_baja VARCHAR(400) NOT NULL DEFAULT '',
     estatus ENUM('ACTIVO', 'INACTIVO') NOT NULL DEFAULT 'ACTIVO',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -113,3 +116,5 @@ CREATE TABLE usuarios (
 INSERT INTO servicio.usuarios(clave, nombre, apellidoPaterno, apellidoMaterno, permisos) VALUES
 ("dp12","Diego","Payan","Lopez","LECTURA"),("mm12","Mayela","Madrid","Gutiérrez","CREACION"),
 ("nz12","Nicolas","Zavala","Sajaropulos","LECTURA");
+
+CREATE TABLE 

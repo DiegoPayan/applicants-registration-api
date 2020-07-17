@@ -6,7 +6,8 @@ import { PuestosRepository } from '../repository/puesto.repository';
 const puestoRepository = new PuestosRepository();
 
 router.get('/', (req, res) => {
-  puestoRepository.getAll().then((response) => {
+  let query = req.query;
+  puestoRepository.getAll(query).then((response) => {
     res.status(response.status).send(response);
   });
 });

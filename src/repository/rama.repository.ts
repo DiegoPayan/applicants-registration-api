@@ -5,9 +5,9 @@ import * as message from '../const/rama.const';
 
 export class RamaRepository {
 
-  async getAll(): Promise<Response> {
+  async getAll(query): Promise<Response> {
     let response = new Response();
-    let ramas = await getManager().getRepository(Rama).find();
+    let ramas = await getManager().getRepository(Rama).find({ where: query });
     if (ramas) {
       response.data = ramas;
       response.status = 200;

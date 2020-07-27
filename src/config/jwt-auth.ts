@@ -13,6 +13,8 @@ protectedRoute.use((req, res, next) => {
   if (token) {
     jwt.verify(token, secret_key.key, (err, decoded) => {
       if (err) {
+        console.log(err);
+
         response.status = 401;
         response.message = 'Token inválido';
         return res.status(response.status).json(response);

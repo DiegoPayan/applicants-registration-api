@@ -20,7 +20,9 @@ router.get('/:idAspirante', (req, res) => {
 });
 
 router.get('/lista/ordenada', (req, res) => {
-  aspirantesRepository.getOrdenedList().then((response) => {
+  let tipoLista = req.query.tipoLista;
+  let subcomision = req.query.subcomision;
+  aspirantesRepository.getOrdenedList(tipoLista,subcomision).then((response) => {
     res.send(response);
   });
 });

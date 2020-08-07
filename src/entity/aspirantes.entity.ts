@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('aspirantes')
 export class Aspirantes {
@@ -17,6 +17,9 @@ export class Aspirantes {
 
   @Column()
   idZona: Number
+
+  @Column()
+  idPuntaje: Number
 
   @Column()
   folio: String
@@ -38,9 +41,6 @@ export class Aspirantes {
 
   @Column({ name: 'fecha' })
   fecha: Date = new Date()
-
-  @Column()
-  total: Number = 0
 
   @Column()
   nominacion: String = ''

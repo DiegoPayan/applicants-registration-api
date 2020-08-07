@@ -5,6 +5,7 @@ import { Rama } from './rama.entity';
 import { Puesto } from './puesto.entity';
 import { Zona } from './zona.entity';
 import { Aspirantes } from './aspirantes.entity';
+import { Puntaje } from './puntaje.entity';
 
 @Entity('aspirantes')
 export class AspirantesJoin extends Aspirantes {
@@ -24,5 +25,9 @@ export class AspirantesJoin extends Aspirantes {
   @OneToOne(() => Zona)
   @JoinColumn({ name: 'idZona' })
   zona: Zona
-  
+
+  @OneToOne(() => Puntaje)
+  @JoinColumn({ name: 'idPuntaje' })
+  puntaje: Puntaje
+
 }

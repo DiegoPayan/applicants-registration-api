@@ -8,6 +8,7 @@ import { Puesto } from '../entity/puesto.entity';
 import { Response } from '../dto/response.dto';
 
 import { isObjectEmpty } from '../utils/isEmpty';
+import { compararFolios } from '../utils/compararFolio';
 
 import * as message from '../const/aspirantes.const';
 
@@ -28,16 +29,10 @@ export class AspirantesRepository {
 
   async getById(idAspirante): Promise<Response> {
     let response = new Response();
-    let aspirante = await getManager().getRepository(AspirantesJoin).findOne({ id: idAspirante }, { relations: ["estudios", "rama", "puesto", "zona"] });
+    let aspirante = await getManager().getRepository(AspirantesJoin).findOne({ id: idAspirante }, { relations: ["estudios", "rama", "puesto", "zona", "puntaje"] });
     if (aspirante) {
-      let puntaje = await getManager().getRepository(Puntaje).findOne({ idAspirante });
-      if (puntaje) {
-        response.data = { aspirante, puntaje };
-        response.status = 200;
-      } else {
-        response.status = 400;
-        response.message = message.NO_PUNTAJE_ASPIRANTE;
-      }
+      response.data = aspirante;
+      response.status = 200;
     } else {
       response.status = 400;
       response.message = message.NO_ASPIRANTE_POR_ID;
@@ -45,8 +40,9 @@ export class AspirantesRepository {
     return response;
   }
 
-  async getOrdenedList(): Promise<Response> {
-    let response = new Response();
+  //tipoLista = puntuacion, cronologico
+  //subcomision = DELEGACION, HOSPITAL REGIONAL
+  async createList(tipoLista, subcomision): Promise<any> {
     let zonasAspirantes = await getManager().getRepository(Aspirantes).createQueryBuilder("aspirante").select("aspirante.idZona").groupBy("aspirante.idZona").getRawMany();
     let ramasAspirantes = await getManager().getRepository(Aspirantes).createQueryBuilder("aspirante").select("aspirante.idRama").groupBy("aspirante.idRama").getRawMany();
     let puestosAspirantes = await getManager().getRepository(Aspirantes).createQueryBuilder("aspirante").select("aspirante.idPuesto").groupBy("aspirante.idPuesto").getRawMany();
@@ -69,14 +65,14 @@ export class AspirantesRepository {
         for (let puesto of puestosAspirantes) {
           let idPuesto = puesto.aspirante_idPuesto;
           let datosPuesto = puestos.filter((puesto) => puesto.id == idPuesto)[0];
-          let aspirantes = { sindicato: {}, instituto: {} };
+          let aspirantes = { sindicato: [], instituto: [] };
 
           for (let listado of listados) {
-            let resultadoAspirantes = await getManager().getRepository(Aspirantes).find({ where: { idZona, idRama, idPuesto, listado } });
+            let resultadoAspirantes = await getManager().getRepository(AspirantesJoin).find({ where: { idZona, idRama, idPuesto, listado, subcomision }, relations: ['puntaje'] });
             if (listado == 'SINDICATO') {
-              aspirantes.sindicato = { ...aspirantes.sindicato, ...resultadoAspirantes };
+              aspirantes.sindicato = [...aspirantes.sindicato, ...resultadoAspirantes];
             } else if (listado == 'INSTITUTO') {
-              aspirantes.instituto = { ...aspirantes.instituto, ...resultadoAspirantes };
+              aspirantes.instituto = [...aspirantes.instituto, ...resultadoAspirantes];
             }
           }
 
@@ -95,7 +91,59 @@ export class AspirantesRepository {
 
     datosAspirantes = datosAspirantes.filter((aspirante) => !isObjectEmpty(aspirante.aspirantes.sindicato) || !isObjectEmpty(aspirante.aspirantes.instituto));
 
-    response.data = datosAspirantes;
+    if (tipoLista == 'cronologico') {
+      datosAspirantes[0].aspirantes.instituto.sort((aspirante1, aspirante2) => {
+        if (aspirante1.fecha < aspirante2.fecha) return -1;
+        if (aspirante1.fecha > aspirante2.fecha) return 1;
+
+        if (aspirante1.puntaje.total > aspirante2.puntaje.total) return -1;
+        if (aspirante1.puntaje.total < aspirante2.puntaje.total) return 1;
+
+        if (compararFolios(aspirante1.folio, aspirante2.folio)) return -1;
+        if (!compararFolios(aspirante1.folio, aspirante2.folio)) return 1;
+      });
+
+      datosAspirantes[0].aspirantes.sindicato.sort((aspirante1, aspirante2) => {
+        if (aspirante1.fecha < aspirante2.fecha) return -1;
+        if (aspirante1.fecha > aspirante2.fecha) return 1;
+
+        if (aspirante1.puntaje.total > aspirante2.puntaje.total) return -1;
+        if (aspirante1.puntaje.total < aspirante2.puntaje.total) return 1;
+
+        if (compararFolios(aspirante1.folio, aspirante2.folio)) return -1;
+        if (!compararFolios(aspirante1.folio, aspirante2.folio)) return 1;
+      });
+    } else if(tipoLista == 'puntuacion') {
+      datosAspirantes[0].aspirantes.instituto.sort((aspirante1, aspirante2) => {
+        if (aspirante1.puntaje.total > aspirante2.puntaje.total) return -1;
+        if (aspirante1.puntaje.total < aspirante2.puntaje.total) return 1;
+
+        if (aspirante1.fecha < aspirante2.fecha) return -1;
+        if (aspirante1.fecha > aspirante2.fecha) return 1;
+
+        if (compararFolios(aspirante1.folio, aspirante2.folio)) return -1;
+        if (!compararFolios(aspirante1.folio, aspirante2.folio)) return 1;
+      });
+
+      datosAspirantes[0].aspirantes.sindicato.sort((aspirante1, aspirante2) => {
+        if (aspirante1.puntaje.total > aspirante2.puntaje.total) return -1;
+        if (aspirante1.puntaje.total < aspirante2.puntaje.total) return 1;
+
+        if (aspirante1.fecha < aspirante2.fecha) return -1;
+        if (aspirante1.fecha > aspirante2.fecha) return 1;
+
+        if (compararFolios(aspirante1.folio, aspirante2.folio)) return -1;
+        if (!compararFolios(aspirante1.folio, aspirante2.folio)) return 1;
+      });
+    }
+
+    return datosAspirantes;
+  }
+
+  async getOrdenedList(tipoLista, subcomision): Promise<Response> {
+    let response = new Response;
+    let list = await this.createList(tipoLista, subcomision);
+    response.data = list;
     return response;
   }
 
@@ -116,9 +164,9 @@ export class AspirantesRepository {
 
   async save(aspirante: Aspirantes, puntaje: Puntaje): Promise<Response> {
     let response = new Response();
+    //Guardar primero puntaje
     let resultadoAspirante = await getManager().getRepository(Aspirantes).save(aspirante);
     if (resultadoAspirante) {
-      puntaje.idAspirante = resultadoAspirante.id;
       let resultadoPuntaje = getManager().getRepository(Puntaje).save(puntaje);
       if (resultadoPuntaje) {
         response.data = resultadoAspirante;

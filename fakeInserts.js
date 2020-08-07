@@ -2061,7 +2061,9 @@ let listado;
 let folio;
 
 const genInserts = async () => {
+  let puntaje = 0;
   for await (name of names) {
+    puntaje++;
     idEstudios = Math.floor(Math.random() * (55 - 1)) + 1;
     idRama = Math.floor(Math.random() * (3 - 1)) + 1;
     idPuesto = Math.floor(Math.random() * (10 - 1)) + 1;
@@ -2073,15 +2075,36 @@ const genInserts = async () => {
     listado = (Math.floor(Math.random() * (3 - 1)) + 1) == 1 ? 'INSTITUTO' : 'SINDICATO';
     fecha = await genRandomDate();
     folio = await genFolio(fecha);
-    values = [...values, `(${idEstudios}, ${idRama}, ${idPuesto}, ${idZona}, "${folio}", "${nombre}", "${apellidoPaterno}", "${apellidoMaterno}", "${subcomision}", "${listado}", "${fecha}")`];
+    values = [...values, `(${idEstudios}, ${idRama}, ${idPuesto}, ${idZona}, "${folio}", ${puntaje}, "${nombre}", "${apellidoPaterno}", "${apellidoMaterno}", "${subcomision}", "${listado}", "${fecha}")`];
   };
   return values;
 }
 
 const printInserts = async () => {
   let hola = await genInserts();
-  let insert = `INSERT INTO servicio.aspirantes (idEstudios, idRama, idPuesto, idZona, folio, nombre, apellidoPaterno, apellidoMaterno, subcomision, listado, fecha) VALUES ${hola};`;
+  let insert = `INSERT INTO servicio.aspirantes (idEstudios, idRama, idPuesto, idZona, folio, idPuntaje, nombre, apellidoPaterno, apellidoMaterno, subcomision, listado, fecha) VALUES ${hola};`;
+  console.log(insert);
+}
+
+let puntuacion = [];
+
+const genScores = async () => {
+  for await (name of names) {
+    escolaridad = Math.floor(Math.random() * (12 - 1)) + 1;
+    parentesco = Math.floor(Math.random() * (8 - 1)) + 1;
+    tiempoServicio = Math.floor(Math.random() * (8 - 1)) + 1;
+    tiempoRegistro = Math.floor(Math.random() * (7 - 1)) + 1;
+    total = parseInt(escolaridad) + parseInt(parentesco) + parseInt(tiempoServicio) + parseInt(tiempoRegistro);
+    puntuacion = [...puntuacion, `(${escolaridad},${parentesco},${tiempoServicio},${tiempoRegistro},${total})`];
+  }
+  return puntuacion;
+}
+
+const printScores = async () => {
+  let hola = await genScores();
+  let insert = `INSERT INTO servicio.puntaje(idAspirante,escolaridad,parentesco,tiempoServicio,tiempoRegistro,total) VALUES ${hola};`;
   console.log(insert);
 }
 
 printInserts();
+printScores();

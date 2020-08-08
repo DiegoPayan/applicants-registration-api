@@ -165,10 +165,11 @@ export class AspirantesRepository {
   async save(aspirante: Aspirantes, puntaje: Puntaje): Promise<Response> {
     let response = new Response();
     //Guardar primero puntaje
-    let resultadoAspirante = await getManager().getRepository(Aspirantes).save(aspirante);
-    if (resultadoAspirante) {
-      let resultadoPuntaje = getManager().getRepository(Puntaje).save(puntaje);
-      if (resultadoPuntaje) {
+    let resultadoPuntaje = getManager().getRepository(Puntaje).save(puntaje);
+    if (resultadoPuntaje) {
+      aspirante.idPuntaje = (await resultadoPuntaje).id;
+      let resultadoAspirante = await getManager().getRepository(Aspirantes).save(aspirante);
+      if (resultadoAspirante) {
         response.data = resultadoAspirante;
         response.data = message.SUCCESS_SAVE_ASPIRANTE;
         response.status = 200;

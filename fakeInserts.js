@@ -2064,7 +2064,7 @@ const genInserts = async () => {
   let puntaje = 0;
   for await (name of names) {
     puntaje++;
-    idEstudios = Math.floor(Math.random() * (55 - 1)) + 1;
+    idEstudios = Math.floor(Math.random() * (50 - 1)) + 1;
     idRama = Math.floor(Math.random() * (3 - 1)) + 1;
     idPuesto = Math.floor(Math.random() * (10 - 1)) + 1;
     idZona = Math.floor(Math.random() * (3 - 1)) + 1;
@@ -2102,7 +2102,7 @@ const genScores = async () => {
 
 const printScores = async () => {
   let hola = await genScores();
-  let insert = `INSERT INTO servicio.puntaje(idAspirante,escolaridad,parentesco,tiempoServicio,tiempoRegistro,total) VALUES ${hola};`;
+  let insert = `INSERT INTO servicio.puntaje(escolaridad,parentesco,tiempoServicio,tiempoRegistro,total) VALUES ${hola};`;
   console.log(insert);
 }
 

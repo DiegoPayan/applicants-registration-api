@@ -80,12 +80,10 @@ CREATE TABLE aspirantes (
         REFERENCES puesto (id),
     FOREIGN KEY (idZona)
         REFERENCES zona (id),
-    INDEX IDX_fecha (created_at ASC),
-    INDEX IDX_total (total DESC)
+    FOREIGN KEY (idPuntaje)
+        REFERENCES puntaje (id),
+    INDEX IDX_fecha (created_at ASC)
 );
-
-INSERT INTO servicio.aspirantes(idEstudios,idRama,idPuesto,idZona,folio,nombre,apellidoPaterno,apellidoMaterno,listado,
-	)
 
 CREATE TABLE puntaje (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -113,5 +111,3 @@ CREATE TABLE usuarios (
 INSERT INTO servicio.usuarios(clave, nombre, apellidoPaterno, apellidoMaterno, permisos) VALUES
 ("dp12","Diego","Payan","Lopez","LECTURA"),("mm12","Mayela","Madrid","Gutiérrez","CREACION"),
 ("nz12","Nicolas","Zavala","Sajaropulos","LECTURA");
-
-CREATE TABLE 

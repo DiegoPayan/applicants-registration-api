@@ -10,6 +10,8 @@ import { Response } from '../dto/response.dto';
 import { isObjectEmpty } from '../utils/isEmpty';
 import { compararFolios } from '../utils/compararFolio';
 
+import { Workbook, Row, Cell, Worksheet } from 'exceljs';
+
 import * as message from '../const/aspirantes.const';
 
 export class AspirantesRepository {
@@ -113,7 +115,7 @@ export class AspirantesRepository {
         if (compararFolios(aspirante1.folio, aspirante2.folio)) return -1;
         if (!compararFolios(aspirante1.folio, aspirante2.folio)) return 1;
       });
-    } else if(tipoLista == 'puntuacion') {
+    } else if (tipoLista == 'puntuacion') {
       datosAspirantes[0].aspirantes.instituto.sort((aspirante1, aspirante2) => {
         if (aspirante1.puntaje.total > aspirante2.puntaje.total) return -1;
         if (aspirante1.puntaje.total < aspirante2.puntaje.total) return 1;
@@ -164,7 +166,6 @@ export class AspirantesRepository {
 
   async save(aspirante: Aspirantes, puntaje: Puntaje): Promise<Response> {
     let response = new Response();
-    //Guardar primero puntaje
     let resultadoPuntaje = getManager().getRepository(Puntaje).save(puntaje);
     if (resultadoPuntaje) {
       aspirante.idPuntaje = (await resultadoPuntaje).id;
@@ -195,6 +196,22 @@ export class AspirantesRepository {
     }
 
     return response;
+  }
+
+  async downloadExcel(tipoLista, subcomision): Promise<any> {
+    let list = await this.createList(tipoLista, subcomision);
+    var workbook = new Workbook();
+    if (subcomision == 'HOSPITAL REGIONAL') subcomision = 'HR';
+    let worksheet = workbook.addWorksheet(`FORMATO ${tipoLista.toUpperCase()} ${subcomision.toUpperCase()}`, {
+      pageSetup: { paperSize: 9, orientation: 'landscape' },
+      headerFooter: { firstHeader: "Hello Exceljs", firstFooter: "Hello World" }
+    });
+    worksheet.columns = [
+      { header: 'Id', key: 'id', width: 10 },
+      { header: 'Name', key: 'name', width: 32 },
+      { header: 'D.O.B.', key: 'DOB', width: 10, outlineLevel: 1 }
+    ];
+    return workbook;
   }
 
 }

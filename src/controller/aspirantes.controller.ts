@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+import { Workbook } from 'exceljs';
 
 import { AspirantesRepository } from '../repository/aspirantes.repository';
 import { isObjectEmpty } from '../utils/isEmpty';
@@ -22,8 +23,20 @@ router.get('/:idAspirante', (req, res) => {
 router.get('/lista/ordenada', (req, res) => {
   let tipoLista = req.query.tipoLista;
   let subcomision = req.query.subcomision;
-  aspirantesRepository.getOrdenedList(tipoLista,subcomision).then((response) => {
+  aspirantesRepository.getOrdenedList(tipoLista, subcomision).then((response) => {
     res.send(response);
+  });
+});
+
+router.get('/lista/ordenada/descarga', (req, res) => {
+  let tipoLista = req.query.tipoLista;
+  let subcomision = req.query.subcomision;
+  aspirantesRepository.downloadExcel(tipoLista, subcomision).then((workbook) => {
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats');
+    res.setHeader("Content-Disposition", "attachment; filename=" + "Report.xlsx");
+    workbook.xlsx.write(res).then(function () {
+      res.end();
+    });
   });
 });
 

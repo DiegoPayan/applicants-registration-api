@@ -70,7 +70,7 @@ export class AspirantesRepository {
           let aspirantes = { sindicato: [], instituto: [] };
 
           for (let listado of listados) {
-            let resultadoAspirantes = await getManager().getRepository(AspirantesJoin).find({ where: { idZona, idRama, idPuesto, listado, subcomision }, relations: ['puntaje'] });
+            let resultadoAspirantes = await getManager().getRepository(AspirantesJoin).find({ where: { idZona, idRama, idPuesto, listado, subcomision }, relations: ['puntaje', 'estudios'] });
             if (listado == 'SINDICATO') {
               aspirantes.sindicato = [...aspirantes.sindicato, ...resultadoAspirantes];
             } else if (listado == 'INSTITUTO') {
@@ -93,50 +93,52 @@ export class AspirantesRepository {
 
     datosAspirantes = datosAspirantes.filter((aspirante) => !isObjectEmpty(aspirante.aspirantes.sindicato) || !isObjectEmpty(aspirante.aspirantes.instituto));
 
-    if (tipoLista == 'cronologico') {
-      datosAspirantes[0].aspirantes.instituto.sort((aspirante1, aspirante2) => {
-        if (aspirante1.fecha < aspirante2.fecha) return -1;
-        if (aspirante1.fecha > aspirante2.fecha) return 1;
+    for (let i = 0; i < datosAspirantes.length; i++) {
+      if (tipoLista == 'cronologico') {
+        datosAspirantes[i].aspirantes.instituto.sort((aspirante1, aspirante2) => {
+          if (aspirante1.fecha < aspirante2.fecha) return -1;
+          if (aspirante1.fecha > aspirante2.fecha) return 1;
 
-        if (aspirante1.puntaje.total > aspirante2.puntaje.total) return -1;
-        if (aspirante1.puntaje.total < aspirante2.puntaje.total) return 1;
+          if (aspirante1.puntaje.total > aspirante2.puntaje.total) return -1;
+          if (aspirante1.puntaje.total < aspirante2.puntaje.total) return 1;
 
-        if (compararFolios(aspirante1.folio, aspirante2.folio)) return -1;
-        if (!compararFolios(aspirante1.folio, aspirante2.folio)) return 1;
-      });
+          if (compararFolios(aspirante1.folio, aspirante2.folio)) return -1;
+          if (!compararFolios(aspirante1.folio, aspirante2.folio)) return 1;
+        });
 
-      datosAspirantes[0].aspirantes.sindicato.sort((aspirante1, aspirante2) => {
-        if (aspirante1.fecha < aspirante2.fecha) return -1;
-        if (aspirante1.fecha > aspirante2.fecha) return 1;
+        datosAspirantes[i].aspirantes.sindicato.sort((aspirante1, aspirante2) => {
+          if (aspirante1.fecha < aspirante2.fecha) return -1;
+          if (aspirante1.fecha > aspirante2.fecha) return 1;
 
-        if (aspirante1.puntaje.total > aspirante2.puntaje.total) return -1;
-        if (aspirante1.puntaje.total < aspirante2.puntaje.total) return 1;
+          if (aspirante1.puntaje.total > aspirante2.puntaje.total) return -1;
+          if (aspirante1.puntaje.total < aspirante2.puntaje.total) return 1;
 
-        if (compararFolios(aspirante1.folio, aspirante2.folio)) return -1;
-        if (!compararFolios(aspirante1.folio, aspirante2.folio)) return 1;
-      });
-    } else if (tipoLista == 'puntuacion') {
-      datosAspirantes[0].aspirantes.instituto.sort((aspirante1, aspirante2) => {
-        if (aspirante1.puntaje.total > aspirante2.puntaje.total) return -1;
-        if (aspirante1.puntaje.total < aspirante2.puntaje.total) return 1;
+          if (compararFolios(aspirante1.folio, aspirante2.folio)) return -1;
+          if (!compararFolios(aspirante1.folio, aspirante2.folio)) return 1;
+        });
+      } else if (tipoLista == 'puntuacion') {
+        datosAspirantes[i].aspirantes.instituto.sort((aspirante1, aspirante2) => {
+          if (aspirante1.puntaje.total > aspirante2.puntaje.total) return -1;
+          if (aspirante1.puntaje.total < aspirante2.puntaje.total) return 1;
 
-        if (aspirante1.fecha < aspirante2.fecha) return -1;
-        if (aspirante1.fecha > aspirante2.fecha) return 1;
+          if (aspirante1.fecha < aspirante2.fecha) return -1;
+          if (aspirante1.fecha > aspirante2.fecha) return 1;
 
-        if (compararFolios(aspirante1.folio, aspirante2.folio)) return -1;
-        if (!compararFolios(aspirante1.folio, aspirante2.folio)) return 1;
-      });
+          if (compararFolios(aspirante1.folio, aspirante2.folio)) return -1;
+          if (!compararFolios(aspirante1.folio, aspirante2.folio)) return 1;
+        });
 
-      datosAspirantes[0].aspirantes.sindicato.sort((aspirante1, aspirante2) => {
-        if (aspirante1.puntaje.total > aspirante2.puntaje.total) return -1;
-        if (aspirante1.puntaje.total < aspirante2.puntaje.total) return 1;
+        datosAspirantes[i].aspirantes.sindicato.sort((aspirante1, aspirante2) => {
+          if (aspirante1.puntaje.total > aspirante2.puntaje.total) return -1;
+          if (aspirante1.puntaje.total < aspirante2.puntaje.total) return 1;
 
-        if (aspirante1.fecha < aspirante2.fecha) return -1;
-        if (aspirante1.fecha > aspirante2.fecha) return 1;
+          if (aspirante1.fecha < aspirante2.fecha) return -1;
+          if (aspirante1.fecha > aspirante2.fecha) return 1;
 
-        if (compararFolios(aspirante1.folio, aspirante2.folio)) return -1;
-        if (!compararFolios(aspirante1.folio, aspirante2.folio)) return 1;
-      });
+          if (compararFolios(aspirante1.folio, aspirante2.folio)) return -1;
+          if (!compararFolios(aspirante1.folio, aspirante2.folio)) return 1;
+        });
+      }
     }
 
     return datosAspirantes;
@@ -217,16 +219,19 @@ export class AspirantesRepository {
 
     worksheet = this.reportColumnSize(worksheet);
 
-    list.forEach((element, index) => {
-      let headerPage = index * 48;
-      worksheet = this.reportHeaderRowSize(worksheet, headerPage);
-      worksheet = this.reportHeader(worksheet, headerPage);
-      worksheet = this.pageHeaderData(worksheet, headerPage, subcomision, element);
-      worksheet = this.reportBodyRowSize(worksheet, headerPage);
-      worksheet = this.reportBodyData(worksheet, headerPage);
-    });
+    worksheet = this.genExcelContent(list, worksheet, subcomision, 0, 0);
 
     return workbook;
+  }
+
+  genExcelContent(list, worksheet, subcomision, index, page): any {
+    let headerPage = page * 48;
+    worksheet = this.reportHeaderRowSize(worksheet, headerPage);
+    worksheet = this.reportHeader(worksheet, headerPage, list[page]);
+    worksheet = this.pageHeaderData(worksheet, headerPage, subcomision, list[page]);
+    worksheet = this.reportBodyRowSize(worksheet, headerPage);
+    worksheet = this.reportBodyData(list, worksheet, headerPage, subcomision, index, page, list[page]);
+    return worksheet;
   }
 
   reportColumnSize(worksheet): any {
@@ -266,72 +271,74 @@ export class AspirantesRepository {
     return worksheet;
   }
 
-  reportHeader(worksheet, headerPage): any {
+  reportHeader(worksheet, headerPage, list): any {
 
-    worksheet.pageSetup.printArea = `A1:U${headerPage + 48}`;
+    if (list) {
+      worksheet.pageSetup.printArea = `A1:U${headerPage + 48}`;
 
-    worksheet.mergeCells(`A${headerPage + 1}:U${headerPage + 1}`);
-    worksheet.getCell(`A${headerPage + 1}`).style = { font: { size: 12, bold: true, name: 'Montserrat' }, alignment: { vertical: 'bottom', horizontal: 'center' } };
-    worksheet.getCell(`A${headerPage + 1}`).value = 'COMISIÓN NACIONAL MIXTA DE BOLSA DE TRABAJO';
+      worksheet.mergeCells(`A${headerPage + 1}:U${headerPage + 1}`);
+      worksheet.getCell(`A${headerPage + 1}`).style = { font: { size: 12, bold: true, name: 'Montserrat' }, alignment: { vertical: 'bottom', horizontal: 'center' } };
+      worksheet.getCell(`A${headerPage + 1}`).value = 'COMISIÓN NACIONAL MIXTA DE BOLSA DE TRABAJO';
 
-    worksheet.mergeCells(`A${headerPage + 2}:U${headerPage + 2}`);
-    worksheet.getCell(`A${headerPage + 2}`).style = { font: { size: 12, bold: true, name: 'Montserrat' }, alignment: { vertical: 'top', horizontal: 'center' } };
-    worksheet.getCell(`A${headerPage + 2}`).value = 'REGISTRO DE CANDIDATOS TIPO PUNTUACIÓN';
+      worksheet.mergeCells(`A${headerPage + 2}:U${headerPage + 2}`);
+      worksheet.getCell(`A${headerPage + 2}`).style = { font: { size: 12, bold: true, name: 'Montserrat' }, alignment: { vertical: 'top', horizontal: 'center' } };
+      worksheet.getCell(`A${headerPage + 2}`).value = 'REGISTRO DE CANDIDATOS TIPO PUNTUACIÓN';
 
-    worksheet.mergeCells(`A${headerPage + 3}:U${headerPage + 3}`);
-    worksheet.getCell(`A${headerPage + 3}`).border = {
-      bottom: { style: 'medium', color: { argb: '000000' } },
-    };
-
+      worksheet.mergeCells(`A${headerPage + 3}:U${headerPage + 3}`);
+      worksheet.getCell(`A${headerPage + 3}`).border = {
+        bottom: { style: 'medium', color: { argb: '000000' } },
+      };
+    }
     return worksheet;
   }
 
   pageHeaderData(worksheet, headerPage, subcomision, element): any {
-    worksheet.mergeCells(`A${headerPage + 4}:C${headerPage + 4}`);
-    worksheet.getCell(`A${headerPage + 4}`).style = { font: { size: 9, name: 'Century Gothic' }, alignment: { vertical: 'bottom', horizontal: 'right' } };
-    worksheet.getCell(`A${headerPage + 4}`).value = 'SUBCOMISIÓN MIXTA DE BOLSA DE TRABAJO EN:';
+    if (element) {
+      worksheet.mergeCells(`A${headerPage + 4}:C${headerPage + 4}`);
+      worksheet.getCell(`A${headerPage + 4}`).style = { font: { size: 9, name: 'Century Gothic' }, alignment: { vertical: 'bottom', horizontal: 'right' } };
+      worksheet.getCell(`A${headerPage + 4}`).value = 'SUBCOMISIÓN MIXTA DE BOLSA DE TRABAJO EN:';
 
-    worksheet.mergeCells(`D${headerPage + 4}:H${headerPage + 4}`);
-    worksheet.getCell(`D${headerPage + 4}`).style = { font: { size: 8, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center', wrapText: true } };
-    worksheet.getCell(`D${headerPage + 4}`).value = subcomision == 'DELEGACION' ? 'DELEGACIÓN ESTATAL SINALOA' : 'SINALOA';
-    worksheet.getCell(`D${headerPage + 4}`).border = { bottom: { style: 'thin', color: { argb: '000000' } } };
-    worksheet.getCell(`E${headerPage + 4}`).border = { bottom: { style: 'thin', color: { argb: '000000' } } };
+      worksheet.mergeCells(`D${headerPage + 4}:H${headerPage + 4}`);
+      worksheet.getCell(`D${headerPage + 4}`).style = { font: { size: 8, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center', wrapText: true } };
+      worksheet.getCell(`D${headerPage + 4}`).value = subcomision == 'DELEGACION' ? 'DELEGACIÓN ESTATAL SINALOA' : 'SINALOA';
+      worksheet.getCell(`D${headerPage + 4}`).border = { bottom: { style: 'thin', color: { argb: '000000' } } };
+      worksheet.getCell(`E${headerPage + 4}`).border = { bottom: { style: 'thin', color: { argb: '000000' } } };
 
-    worksheet.getCell(`I${headerPage + 4}`).style = { font: { size: 9, name: 'Century Gothic' }, alignment: { vertical: 'bottom', horizontal: 'right' } };
-    worksheet.getCell(`I${headerPage + 4}`).value = 'REGIÓN:';
+      worksheet.getCell(`I${headerPage + 4}`).style = { font: { size: 9, name: 'Century Gothic' }, alignment: { vertical: 'bottom', horizontal: 'right' } };
+      worksheet.getCell(`I${headerPage + 4}`).value = 'REGIÓN:';
 
-    worksheet.getCell(`J${headerPage + 4}`).style = { font: { size: 9, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'bottom', horizontal: 'center' } };
-    worksheet.getCell(`J${headerPage + 4}`).value = element.zona;
-    worksheet.getCell(`J${headerPage + 4}`).border = { bottom: { style: 'thin', color: { argb: '000000' } } };
+      worksheet.getCell(`J${headerPage + 4}`).style = { font: { size: 9, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'bottom', horizontal: 'center' } };
+      worksheet.getCell(`J${headerPage + 4}`).value = element.zona;
+      worksheet.getCell(`J${headerPage + 4}`).border = { bottom: { style: 'thin', color: { argb: '000000' } } };
 
-    worksheet.mergeCells(`K${headerPage + 4}:L${headerPage + 4}`);
-    worksheet.getCell(`K${headerPage + 4}`).style = { font: { size: 9, name: 'Century Gothic' }, alignment: { vertical: 'bottom', horizontal: 'right' } };
-    worksheet.getCell(`K${headerPage + 4}`).value = 'RAMA:';
+      worksheet.mergeCells(`K${headerPage + 4}:L${headerPage + 4}`);
+      worksheet.getCell(`K${headerPage + 4}`).style = { font: { size: 9, name: 'Century Gothic' }, alignment: { vertical: 'bottom', horizontal: 'right' } };
+      worksheet.getCell(`K${headerPage + 4}`).value = 'RAMA:';
 
-    worksheet.getCell(`M${headerPage + 4}`).style = { font: { size: 9, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'bottom', horizontal: 'center' } };
-    worksheet.getCell(`M${headerPage + 4}`).value = element.rama;
-    worksheet.getCell(`M${headerPage + 4}`).border = { bottom: { style: 'thin', color: { argb: '000000' } } };
+      worksheet.getCell(`M${headerPage + 4}`).style = { font: { size: 9, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'bottom', horizontal: 'center' } };
+      worksheet.getCell(`M${headerPage + 4}`).value = element.rama;
+      worksheet.getCell(`M${headerPage + 4}`).border = { bottom: { style: 'thin', color: { argb: '000000' } } };
 
-    worksheet.getCell(`N${headerPage + 4}`).style = { font: { size: 9, name: 'Century Gothic' }, alignment: { vertical: 'bottom', horizontal: 'right' } };
-    worksheet.getCell(`N${headerPage + 4}`).value = 'PUESTO:';
+      worksheet.getCell(`N${headerPage + 4}`).style = { font: { size: 9, name: 'Century Gothic' }, alignment: { vertical: 'bottom', horizontal: 'right' } };
+      worksheet.getCell(`N${headerPage + 4}`).value = 'PUESTO:';
 
-    worksheet.mergeCells(`O${headerPage + 4}:U${headerPage + 4}`);
-    worksheet.getCell(`O${headerPage + 4}`).style = { font: { size: 9, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'bottom', horizontal: 'center' } };
-    worksheet.getCell(`O${headerPage + 4}`).value = element.puesto;
-    worksheet.getCell(`O${headerPage + 4}`).border = { bottom: { style: 'thin', color: { argb: '000000' } } };
-    worksheet.getCell(`P${headerPage + 4}`).border = { bottom: { style: 'thin', color: { argb: '000000' } } };
+      worksheet.mergeCells(`O${headerPage + 4}:U${headerPage + 4}`);
+      worksheet.getCell(`O${headerPage + 4}`).style = { font: { size: 9, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'bottom', horizontal: 'center' } };
+      worksheet.getCell(`O${headerPage + 4}`).value = element.puesto;
+      worksheet.getCell(`O${headerPage + 4}`).border = { bottom: { style: 'thin', color: { argb: '000000' } } };
+      worksheet.getCell(`P${headerPage + 4}`).border = { bottom: { style: 'thin', color: { argb: '000000' } } };
 
-    worksheet.getCell(`B${headerPage + 5}`).style = { font: { size: 9, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'bottom', horizontal: 'left' } };
-    worksheet.getCell(`B${headerPage + 5}`).value = 'REFERENDO: ENERO 2020';
+      worksheet.getCell(`B${headerPage + 5}`).style = { font: { size: 9, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'bottom', horizontal: 'left' } };
+      worksheet.getCell(`B${headerPage + 5}`).value = 'REFERENDO: ENERO 2020';
 
-    worksheet.mergeCells(`A${headerPage + 6}:J${headerPage + 6}`);
-    worksheet.getCell(`A${headerPage + 6}`).style = { font: { size: 9, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
-    worksheet.getCell(`A${headerPage + 6}`).value = 'LISTADO INSTITUTO';
+      worksheet.mergeCells(`A${headerPage + 6}:J${headerPage + 6}`);
+      worksheet.getCell(`A${headerPage + 6}`).style = { font: { size: 9, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+      worksheet.getCell(`A${headerPage + 6}`).value = 'LISTADO INSTITUTO';
 
-    worksheet.mergeCells(`L${headerPage + 6}:U${headerPage + 6}`);
-    worksheet.getCell(`L${headerPage + 6}`).style = { font: { size: 9, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
-    worksheet.getCell(`L${headerPage + 6}`).value = 'LISTADO SINDICATO';
-
+      worksheet.mergeCells(`L${headerPage + 6}:U${headerPage + 6}`);
+      worksheet.getCell(`L${headerPage + 6}`).style = { font: { size: 9, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+      worksheet.getCell(`L${headerPage + 6}`).value = 'LISTADO SINDICATO';
+    }
     return worksheet;
   }
 
@@ -359,88 +366,186 @@ export class AspirantesRepository {
     return worksheet;
   }
 
-  reportBodyData(worksheet, headerPage): any {
+  reportBodyData(list, worksheet, headerPage, subcomision, index, page, listByIndex): any {
 
-    worksheet.getCell(`A${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
-    worksheet.getCell(`A${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
-    worksheet.getCell(`A${headerPage + 7}`).value = 'No.';
+    if (listByIndex) {
+      worksheet.getCell(`A${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+      worksheet.getCell(`A${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+      worksheet.getCell(`A${headerPage + 7}`).value = 'No.';
 
-    worksheet.getCell(`B${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
-    worksheet.getCell(`B${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
-    worksheet.getCell(`B${headerPage + 7}`).value = 'NOMBRE';
+      worksheet.getCell(`B${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+      worksheet.getCell(`B${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+      worksheet.getCell(`B${headerPage + 7}`).value = 'NOMBRE';
 
-    worksheet.getCell(`C${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center', wrapText: true } };
-    worksheet.getCell(`C${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
-    worksheet.getCell(`C${headerPage + 7}`).value = 'NIVEL MAXIMO DE ESTUDIOS';
+      worksheet.getCell(`C${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center', wrapText: true } };
+      worksheet.getCell(`C${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+      worksheet.getCell(`C${headerPage + 7}`).value = 'NIVEL MAXIMO DE ESTUDIOS';
 
-    worksheet.getCell(`D${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
-    worksheet.getCell(`D${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
-    worksheet.getCell(`D${headerPage + 7}`).value = 'E';
+      worksheet.getCell(`D${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+      worksheet.getCell(`D${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+      worksheet.getCell(`D${headerPage + 7}`).value = 'E';
 
-    worksheet.getCell(`E${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
-    worksheet.getCell(`E${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
-    worksheet.getCell(`E${headerPage + 7}`).value = 'P';
+      worksheet.getCell(`E${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+      worksheet.getCell(`E${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+      worksheet.getCell(`E${headerPage + 7}`).value = 'P';
 
-    worksheet.getCell(`F${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
-    worksheet.getCell(`F${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
-    worksheet.getCell(`F${headerPage + 7}`).value = 'TS';
+      worksheet.getCell(`F${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+      worksheet.getCell(`F${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+      worksheet.getCell(`F${headerPage + 7}`).value = 'TS';
 
-    worksheet.getCell(`G${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
-    worksheet.getCell(`G${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
-    worksheet.getCell(`G${headerPage + 7}`).value = 'TR';
+      worksheet.getCell(`G${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+      worksheet.getCell(`G${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+      worksheet.getCell(`G${headerPage + 7}`).value = 'TR';
 
-    worksheet.getCell(`H${headerPage + 7}`).style = { font: { size: 5, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center', wrapText: true } };
-    worksheet.getCell(`H${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
-    worksheet.getCell(`H${headerPage + 7}`).value = 'TOTAL';
+      worksheet.getCell(`H${headerPage + 7}`).style = { font: { size: 5, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center', wrapText: true } };
+      worksheet.getCell(`H${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+      worksheet.getCell(`H${headerPage + 7}`).value = 'TOTAL';
 
-    worksheet.getCell(`I${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
-    worksheet.getCell(`I${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
-    worksheet.getCell(`I${headerPage + 7}`).value = 'NOMICACIÓN';
+      worksheet.getCell(`I${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+      worksheet.getCell(`I${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+      worksheet.getCell(`I${headerPage + 7}`).value = 'NOMICACIÓN';
 
-    worksheet.getCell(`J${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
-    worksheet.getCell(`J${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
-    worksheet.getCell(`J${headerPage + 7}`).value = 'MOTIVO BAJA';
+      worksheet.getCell(`J${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+      worksheet.getCell(`J${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+      worksheet.getCell(`J${headerPage + 7}`).value = 'MOTIVO BAJA';
 
-    //
-    worksheet.getCell(`L${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
-    worksheet.getCell(`L${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
-    worksheet.getCell(`L${headerPage + 7}`).value = 'No.';
+      //
+      worksheet.getCell(`L${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+      worksheet.getCell(`L${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+      worksheet.getCell(`L${headerPage + 7}`).value = 'No.';
 
-    worksheet.getCell(`M${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
-    worksheet.getCell(`M${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
-    worksheet.getCell(`M${headerPage + 7}`).value = 'NOMBRE';
+      worksheet.getCell(`M${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+      worksheet.getCell(`M${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+      worksheet.getCell(`M${headerPage + 7}`).value = 'NOMBRE';
 
-    worksheet.getCell(`N${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center', wrapText: true } };
-    worksheet.getCell(`N${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
-    worksheet.getCell(`N${headerPage + 7}`).value = 'NIVEL MAXIMO DE ESTUDIOS';
+      worksheet.getCell(`N${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center', wrapText: true } };
+      worksheet.getCell(`N${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+      worksheet.getCell(`N${headerPage + 7}`).value = 'NIVEL MAXIMO DE ESTUDIOS';
 
-    worksheet.getCell(`O${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
-    worksheet.getCell(`O${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
-    worksheet.getCell(`O${headerPage + 7}`).value = 'E';
+      worksheet.getCell(`O${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+      worksheet.getCell(`O${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+      worksheet.getCell(`O${headerPage + 7}`).value = 'E';
 
-    worksheet.getCell(`P${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
-    worksheet.getCell(`P${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
-    worksheet.getCell(`P${headerPage + 7}`).value = 'P';
+      worksheet.getCell(`P${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+      worksheet.getCell(`P${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+      worksheet.getCell(`P${headerPage + 7}`).value = 'P';
 
-    worksheet.getCell(`Q${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
-    worksheet.getCell(`Q${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
-    worksheet.getCell(`Q${headerPage + 7}`).value = 'TS';
+      worksheet.getCell(`Q${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+      worksheet.getCell(`Q${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+      worksheet.getCell(`Q${headerPage + 7}`).value = 'TS';
 
-    worksheet.getCell(`R${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
-    worksheet.getCell(`R${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
-    worksheet.getCell(`R${headerPage + 7}`).value = 'TR';
+      worksheet.getCell(`R${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+      worksheet.getCell(`R${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+      worksheet.getCell(`R${headerPage + 7}`).value = 'TR';
 
-    worksheet.getCell(`S${headerPage + 7}`).style = { font: { size: 5, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center', wrapText: true } };
-    worksheet.getCell(`S${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
-    worksheet.getCell(`S${headerPage + 7}`).value = 'TOTAL';
+      worksheet.getCell(`S${headerPage + 7}`).style = { font: { size: 5, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center', wrapText: true } };
+      worksheet.getCell(`S${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+      worksheet.getCell(`S${headerPage + 7}`).value = 'TOTAL';
 
-    worksheet.getCell(`T${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
-    worksheet.getCell(`T${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
-    worksheet.getCell(`T${headerPage + 7}`).value = 'NOMICACIÓN';
+      worksheet.getCell(`T${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+      worksheet.getCell(`T${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+      worksheet.getCell(`T${headerPage + 7}`).value = 'NOMICACIÓN';
 
-    worksheet.getCell(`U${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
-    worksheet.getCell(`U${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
-    worksheet.getCell(`U${headerPage + 7}`).value = 'MOTIVO BAJA';
+      worksheet.getCell(`U${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+      worksheet.getCell(`U${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+      worksheet.getCell(`U${headerPage + 7}`).value = 'MOTIVO BAJA';
+
+
+      for (let i = 0; i < 30; i++) {
+        worksheet.getCell(`A${headerPage + (8 + i)}`).style = { font: { size: 7, name: 'Montserrat' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+        worksheet.getCell(`A${headerPage + (8 + i)}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+
+        worksheet.getCell(`B${headerPage + (8 + i)}`).style = { font: { size: 7, name: 'Montserrat' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+        worksheet.getCell(`B${headerPage + (8 + i)}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+
+        worksheet.getCell(`C${headerPage + (8 + i)}`).style = { font: { size: 6.5, name: 'Montserrat' }, alignment: { vertical: 'middle', horizontal: 'center', wrapText: true } };
+        worksheet.getCell(`C${headerPage + (8 + i)}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+
+        worksheet.getCell(`D${headerPage + (8 + i)}`).style = { font: { size: 7, name: 'Montserrat' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+        worksheet.getCell(`D${headerPage + (8 + i)}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+
+        worksheet.getCell(`E${headerPage + (8 + i)}`).style = { font: { size: 7, name: 'Montserrat' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+        worksheet.getCell(`E${headerPage + (8 + i)}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+
+        worksheet.getCell(`F${headerPage + (8 + i)}`).style = { font: { size: 7, name: 'Montserrat' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+        worksheet.getCell(`F${headerPage + (8 + i)}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+
+        worksheet.getCell(`G${headerPage + (8 + i)}`).style = { font: { size: 7, name: 'Montserrat' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+        worksheet.getCell(`G${headerPage + (8 + i)}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+
+        worksheet.getCell(`H${headerPage + (8 + i)}`).style = { font: { size: 7, name: 'Montserrat' }, alignment: { vertical: 'middle', horizontal: 'center', wrapText: true } };
+        worksheet.getCell(`H${headerPage + (8 + i)}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+
+        worksheet.getCell(`I${headerPage + (8 + i)}`).style = { font: { size: 7, name: 'Montserrat' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+        worksheet.getCell(`I${headerPage + (8 + i)}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+
+        worksheet.getCell(`J${headerPage + (8 + i)}`).style = { font: { size: 7, name: 'Montserrat' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+        worksheet.getCell(`J${headerPage + (8 + i)}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+
+        worksheet.getCell(`A${headerPage + (8 + i)}`).value = i + 1;
+
+        if (listByIndex.aspirantes.sindicato[i]) {
+          worksheet.getCell(`B${headerPage + (8 + i)}`).value = `${listByIndex.aspirantes.sindicato[i].nombre} ${listByIndex.aspirantes.sindicato[i].apellidoPaterno} ${listByIndex.aspirantes.sindicato[i].apellidoMaterno}`;
+          worksheet.getCell(`C${headerPage + (8 + i)}`).value = listByIndex.aspirantes.sindicato[i].estudios.nombre;
+          worksheet.getCell(`D${headerPage + (8 + i)}`).value = listByIndex.aspirantes.sindicato[i].puntaje.escolaridad;
+          worksheet.getCell(`E${headerPage + (8 + i)}`).value = listByIndex.aspirantes.sindicato[i].puntaje.parentesco;
+          worksheet.getCell(`F${headerPage + (8 + i)}`).value = listByIndex.aspirantes.sindicato[i].puntaje.tiempoServicio;
+          worksheet.getCell(`G${headerPage + (8 + i)}`).value = listByIndex.aspirantes.sindicato[i].puntaje.tiempoRegistro;
+          worksheet.getCell(`H${headerPage + (8 + i)}`).value = listByIndex.aspirantes.sindicato[i].puntaje.total;
+          worksheet.getCell(`I${headerPage + (8 + i)}`).value = listByIndex.aspirantes.sindicato[i].nominacion;
+          worksheet.getCell(`J${headerPage + (8 + i)}`).value = listByIndex.aspirantes.sindicato[i].motivo_baja;
+        }
+
+      }
+      for (let i = 0; i < 30; i++) {
+        worksheet.getCell(`L${headerPage + (8 + i)}`).style = { font: { size: 7, name: 'Montserrat' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+        worksheet.getCell(`L${headerPage + (8 + i)}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+
+        worksheet.getCell(`M${headerPage + (8 + i)}`).style = { font: { size: 7, name: 'Montserrat' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+        worksheet.getCell(`M${headerPage + (8 + i)}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+
+        worksheet.getCell(`N${headerPage + (8 + i)}`).style = { font: { size: 6.5, name: 'Montserrat' }, alignment: { vertical: 'middle', horizontal: 'center', wrapText: true } };
+        worksheet.getCell(`N${headerPage + (8 + i)}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+
+        worksheet.getCell(`O${headerPage + (8 + i)}`).style = { font: { size: 7, name: 'Montserrat' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+        worksheet.getCell(`O${headerPage + (8 + i)}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+
+        worksheet.getCell(`P${headerPage + (8 + i)}`).style = { font: { size: 7, name: 'Montserrat' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+        worksheet.getCell(`P${headerPage + (8 + i)}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+
+        worksheet.getCell(`Q${headerPage + (8 + i)}`).style = { font: { size: 7, name: 'Montserrat' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+        worksheet.getCell(`Q${headerPage + (8 + i)}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+
+        worksheet.getCell(`R${headerPage + (8 + i)}`).style = { font: { size: 7, name: 'Montserrat' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+        worksheet.getCell(`R${headerPage + (8 + i)}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+
+        worksheet.getCell(`S${headerPage + (8 + i)}`).style = { font: { size: 7, name: 'Montserrat' }, alignment: { vertical: 'middle', horizontal: 'center', wrapText: true } };
+        worksheet.getCell(`S${headerPage + (8 + i)}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+
+        worksheet.getCell(`T${headerPage + (8 + i)}`).style = { font: { size: 7, name: 'Montserrat' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+        worksheet.getCell(`T${headerPage + (8 + i)}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+
+        worksheet.getCell(`U${headerPage + (8 + i)}`).style = { font: { size: 7, name: 'Montserrat' }, alignment: { vertical: 'middle', horizontal: 'center' } };
+        worksheet.getCell(`U${headerPage + (8 + i)}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
+
+        worksheet.getCell(`L${headerPage + (8 + i)}`).value = i + 1;
+
+        if (listByIndex.aspirantes.instituto[i]) {
+          worksheet.getCell(`M${headerPage + (8 + i)}`).value = `${listByIndex.aspirantes.instituto[i].nombre} ${listByIndex.aspirantes.instituto[i].apellidoPaterno} ${listByIndex.aspirantes.instituto[i].apellidoMaterno}`;
+          worksheet.getCell(`N${headerPage + (8 + i)}`).value = listByIndex.aspirantes.instituto[i].estudios.nombre;
+          worksheet.getCell(`O${headerPage + (8 + i)}`).value = listByIndex.aspirantes.instituto[i].puntaje.escolaridad;
+          worksheet.getCell(`P${headerPage + (8 + i)}`).value = listByIndex.aspirantes.instituto[i].puntaje.parentesco;
+          worksheet.getCell(`Q${headerPage + (8 + i)}`).value = listByIndex.aspirantes.instituto[i].puntaje.tiempoServicio;
+          worksheet.getCell(`R${headerPage + (8 + i)}`).value = listByIndex.aspirantes.instituto[i].puntaje.tiempoRegistro;
+          worksheet.getCell(`S${headerPage + (8 + i)}`).value = listByIndex.aspirantes.instituto[i].puntaje.total;
+          worksheet.getCell(`T${headerPage + (8 + i)}`).value = listByIndex.aspirantes.instituto[i].nominacion;
+          worksheet.getCell(`U${headerPage + (8 + i)}`).value = listByIndex.aspirantes.instituto[i].motivo_baja;
+        }
+
+      }
+
+      this.genExcelContent(list, worksheet, subcomision, 0, page + 1);
+    }
 
     return worksheet;
   }

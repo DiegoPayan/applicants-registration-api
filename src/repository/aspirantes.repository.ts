@@ -219,18 +219,23 @@ export class AspirantesRepository {
 
     worksheet = this.reportColumnSize(worksheet);
 
-    worksheet = this.genExcelContent(list, worksheet, subcomision, 0, 0);
+    worksheet = this.genExcelContent(list, worksheet, subcomision, 0);
 
     return workbook;
   }
 
-  genExcelContent(list, worksheet, subcomision, index, page): any {
+  headerIndex = 0;
+  bodyIndex = 0;
+  genExcelContent(list, worksheet, subcomision, page): any {
+    console.log('======================');
+      console.log(this.bodyIndex);
+      console.log(this.headerIndex);
     let headerPage = page * 48;
     worksheet = this.reportHeaderRowSize(worksheet, headerPage);
-    worksheet = this.reportHeader(worksheet, headerPage, list[page]);
-    worksheet = this.pageHeaderData(worksheet, headerPage, subcomision, list[page]);
+    worksheet = this.reportHeader(worksheet, headerPage, list[this.headerIndex]);
+    worksheet = this.pageHeaderData(worksheet, headerPage, subcomision, list[this.headerIndex]);
     worksheet = this.reportBodyRowSize(worksheet, headerPage);
-    worksheet = this.reportBodyData(list, worksheet, headerPage, subcomision, index, page, list[page]);
+    worksheet = this.reportBodyData(list, worksheet, headerPage, subcomision, page, list[this.headerIndex]);
     return worksheet;
   }
 
@@ -272,8 +277,7 @@ export class AspirantesRepository {
   }
 
   reportHeader(worksheet, headerPage, list): any {
-
-    if (list) {
+    if (list && (list.aspirantes.sindicato.length > 0 || list.aspirantes.instituto.length > 0)) {
       worksheet.pageSetup.printArea = `A1:U${headerPage + 48}`;
 
       worksheet.mergeCells(`A${headerPage + 1}:U${headerPage + 1}`);
@@ -366,7 +370,7 @@ export class AspirantesRepository {
     return worksheet;
   }
 
-  reportBodyData(list, worksheet, headerPage, subcomision, index, page, listByIndex): any {
+  reportBodyData(list, worksheet, headerPage, subcomision, page, listByIndex): any {
 
     if (listByIndex) {
       worksheet.getCell(`A${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
@@ -450,7 +454,7 @@ export class AspirantesRepository {
       worksheet.getCell(`U${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
       worksheet.getCell(`U${headerPage + 7}`).value = 'MOTIVO BAJA';
 
-
+      let inicio = this.bodyIndex == 0 ? 0 : this.bodyIndex * 30;
       for (let i = 0; i < 30; i++) {
         worksheet.getCell(`A${headerPage + (8 + i)}`).style = { font: { size: 7, name: 'Montserrat' }, alignment: { vertical: 'middle', horizontal: 'center' } };
         worksheet.getCell(`A${headerPage + (8 + i)}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
@@ -482,21 +486,22 @@ export class AspirantesRepository {
         worksheet.getCell(`J${headerPage + (8 + i)}`).style = { font: { size: 7, name: 'Montserrat' }, alignment: { vertical: 'middle', horizontal: 'center' } };
         worksheet.getCell(`J${headerPage + (8 + i)}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
 
-        worksheet.getCell(`A${headerPage + (8 + i)}`).value = i + 1;
+        worksheet.getCell(`A${headerPage + (8 + i)}`).value = inicio + i + 1;
 
-        if (listByIndex.aspirantes.sindicato[i]) {
-          worksheet.getCell(`B${headerPage + (8 + i)}`).value = `${listByIndex.aspirantes.sindicato[i].nombre} ${listByIndex.aspirantes.sindicato[i].apellidoPaterno} ${listByIndex.aspirantes.sindicato[i].apellidoMaterno}`;
-          worksheet.getCell(`C${headerPage + (8 + i)}`).value = listByIndex.aspirantes.sindicato[i].estudios.nombre;
-          worksheet.getCell(`D${headerPage + (8 + i)}`).value = listByIndex.aspirantes.sindicato[i].puntaje.escolaridad;
-          worksheet.getCell(`E${headerPage + (8 + i)}`).value = listByIndex.aspirantes.sindicato[i].puntaje.parentesco;
-          worksheet.getCell(`F${headerPage + (8 + i)}`).value = listByIndex.aspirantes.sindicato[i].puntaje.tiempoServicio;
-          worksheet.getCell(`G${headerPage + (8 + i)}`).value = listByIndex.aspirantes.sindicato[i].puntaje.tiempoRegistro;
-          worksheet.getCell(`H${headerPage + (8 + i)}`).value = listByIndex.aspirantes.sindicato[i].puntaje.total;
-          worksheet.getCell(`I${headerPage + (8 + i)}`).value = listByIndex.aspirantes.sindicato[i].nominacion;
-          worksheet.getCell(`J${headerPage + (8 + i)}`).value = listByIndex.aspirantes.sindicato[i].motivo_baja;
+        if (listByIndex.aspirantes.instituto[inicio + i]) {
+          worksheet.getCell(`B${headerPage + (8 + i)}`).value = `${listByIndex.aspirantes.instituto[inicio + i].nombre} ${listByIndex.aspirantes.instituto[inicio + i].apellidoPaterno} ${listByIndex.aspirantes.instituto[inicio + i].apellidoMaterno}`;
+          worksheet.getCell(`C${headerPage + (8 + i)}`).value = listByIndex.aspirantes.instituto[inicio + i].estudios.nombre;
+          worksheet.getCell(`D${headerPage + (8 + i)}`).value = listByIndex.aspirantes.instituto[inicio + i].puntaje.escolaridad;
+          worksheet.getCell(`E${headerPage + (8 + i)}`).value = listByIndex.aspirantes.instituto[inicio + i].puntaje.parentesco;
+          worksheet.getCell(`F${headerPage + (8 + i)}`).value = listByIndex.aspirantes.instituto[inicio + i].puntaje.tiempoServicio;
+          worksheet.getCell(`G${headerPage + (8 + i)}`).value = listByIndex.aspirantes.instituto[inicio + i].puntaje.tiempoRegistro;
+          worksheet.getCell(`H${headerPage + (8 + i)}`).value = listByIndex.aspirantes.instituto[inicio + i].puntaje.total;
+          worksheet.getCell(`I${headerPage + (8 + i)}`).value = listByIndex.aspirantes.instituto[inicio + i].nominacion;
+          worksheet.getCell(`J${headerPage + (8 + i)}`).value = listByIndex.aspirantes.instituto[inicio + i].motivo_baja;
         }
 
       }
+
       for (let i = 0; i < 30; i++) {
         worksheet.getCell(`L${headerPage + (8 + i)}`).style = { font: { size: 7, name: 'Montserrat' }, alignment: { vertical: 'middle', horizontal: 'center' } };
         worksheet.getCell(`L${headerPage + (8 + i)}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
@@ -528,23 +533,34 @@ export class AspirantesRepository {
         worksheet.getCell(`U${headerPage + (8 + i)}`).style = { font: { size: 7, name: 'Montserrat' }, alignment: { vertical: 'middle', horizontal: 'center' } };
         worksheet.getCell(`U${headerPage + (8 + i)}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
 
-        worksheet.getCell(`L${headerPage + (8 + i)}`).value = i + 1;
+        worksheet.getCell(`L${headerPage + (8 + i)}`).value = inicio + i + 1;
 
-        if (listByIndex.aspirantes.instituto[i]) {
-          worksheet.getCell(`M${headerPage + (8 + i)}`).value = `${listByIndex.aspirantes.instituto[i].nombre} ${listByIndex.aspirantes.instituto[i].apellidoPaterno} ${listByIndex.aspirantes.instituto[i].apellidoMaterno}`;
-          worksheet.getCell(`N${headerPage + (8 + i)}`).value = listByIndex.aspirantes.instituto[i].estudios.nombre;
-          worksheet.getCell(`O${headerPage + (8 + i)}`).value = listByIndex.aspirantes.instituto[i].puntaje.escolaridad;
-          worksheet.getCell(`P${headerPage + (8 + i)}`).value = listByIndex.aspirantes.instituto[i].puntaje.parentesco;
-          worksheet.getCell(`Q${headerPage + (8 + i)}`).value = listByIndex.aspirantes.instituto[i].puntaje.tiempoServicio;
-          worksheet.getCell(`R${headerPage + (8 + i)}`).value = listByIndex.aspirantes.instituto[i].puntaje.tiempoRegistro;
-          worksheet.getCell(`S${headerPage + (8 + i)}`).value = listByIndex.aspirantes.instituto[i].puntaje.total;
-          worksheet.getCell(`T${headerPage + (8 + i)}`).value = listByIndex.aspirantes.instituto[i].nominacion;
-          worksheet.getCell(`U${headerPage + (8 + i)}`).value = listByIndex.aspirantes.instituto[i].motivo_baja;
+        if (listByIndex.aspirantes.sindicato[inicio + i]) {
+          worksheet.getCell(`M${headerPage + (8 + i)}`).value = `${listByIndex.aspirantes.sindicato[inicio + i].nombre} ${listByIndex.aspirantes.sindicato[inicio + i].apellidoPaterno} ${listByIndex.aspirantes.sindicato[inicio + i].apellidoMaterno}`;
+          worksheet.getCell(`N${headerPage + (8 + i)}`).value = listByIndex.aspirantes.sindicato[inicio + i].estudios.nombre;
+          worksheet.getCell(`O${headerPage + (8 + i)}`).value = listByIndex.aspirantes.sindicato[inicio + i].puntaje.escolaridad;
+          worksheet.getCell(`P${headerPage + (8 + i)}`).value = listByIndex.aspirantes.sindicato[inicio + i].puntaje.parentesco;
+          worksheet.getCell(`Q${headerPage + (8 + i)}`).value = listByIndex.aspirantes.sindicato[inicio + i].puntaje.tiempoServicio;
+          worksheet.getCell(`R${headerPage + (8 + i)}`).value = listByIndex.aspirantes.sindicato[inicio + i].puntaje.tiempoRegistro;
+          worksheet.getCell(`S${headerPage + (8 + i)}`).value = listByIndex.aspirantes.sindicato[inicio + i].puntaje.total;
+          worksheet.getCell(`T${headerPage + (8 + i)}`).value = listByIndex.aspirantes.sindicato[inicio + i].nominacion;
+          worksheet.getCell(`U${headerPage + (8 + i)}`).value = listByIndex.aspirantes.sindicato[inicio + i].motivo_baja;
         }
 
       }
 
-      this.genExcelContent(list, worksheet, subcomision, 0, page + 1);
+      if (this.bodyIndex < Math.floor(listByIndex.aspirantes.instituto.length / 30) || this.bodyIndex < Math.floor(listByIndex.aspirantes.sindicato.length / 30)) {
+        this.bodyIndex++;
+      } else {
+        this.bodyIndex = 0;
+        this.headerIndex++;
+      }
+
+      console.log('======================');
+      console.log(this.bodyIndex);
+      console.log(this.headerIndex);
+
+      this.genExcelContent(list, worksheet, subcomision, page + 1);
     }
 
     return worksheet;

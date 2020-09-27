@@ -227,14 +227,11 @@ export class AspirantesRepository {
   headerIndex = 0;
   bodyIndex = 0;
   genExcelContent(list, worksheet, subcomision, page): any {
-    console.log('======================');
-      console.log(this.bodyIndex);
-      console.log(this.headerIndex);
     let headerPage = page * 48;
-    worksheet = this.reportHeaderRowSize(worksheet, headerPage);
+    worksheet = this.reportHeaderRowSize(worksheet, headerPage, list[this.headerIndex]);
     worksheet = this.reportHeader(worksheet, headerPage, list[this.headerIndex]);
     worksheet = this.pageHeaderData(worksheet, headerPage, subcomision, list[this.headerIndex]);
-    worksheet = this.reportBodyRowSize(worksheet, headerPage);
+    worksheet = this.reportBodyRowSize(worksheet, headerPage, list[this.headerIndex]);
     worksheet = this.reportBodyData(list, worksheet, headerPage, subcomision, page, list[this.headerIndex]);
     return worksheet;
   }
@@ -265,19 +262,23 @@ export class AspirantesRepository {
     return worksheet;
   }
 
-  reportHeaderRowSize(worksheet, headerPage): any {
-    const row1 = worksheet.getRow(headerPage + 1); row1.height = 51;
-    const row2 = worksheet.getRow(headerPage + 2); row2.height = 21;
-    const row3 = worksheet.getRow(headerPage + 3); row3.height = 10.5;
-    const row4 = worksheet.getRow(headerPage + 4); row4.height = 32.5;
-    const row5 = worksheet.getRow(headerPage + 5); row5.height = 14.25;
-    const row6 = worksheet.getRow(headerPage + 6); row6.height = 15;
+  reportHeaderRowSize(worksheet, headerPage, list): any {
+    let inicio = this.bodyIndex == 0 ? 0 : this.bodyIndex * 30;
+    if (list && (list.aspirantes.instituto[inicio] || list.aspirantes.sindicato[inicio])) {
+      const row1 = worksheet.getRow(headerPage + 1); row1.height = 51;
+      const row2 = worksheet.getRow(headerPage + 2); row2.height = 21;
+      const row3 = worksheet.getRow(headerPage + 3); row3.height = 10.5;
+      const row4 = worksheet.getRow(headerPage + 4); row4.height = 32.5;
+      const row5 = worksheet.getRow(headerPage + 5); row5.height = 14.25;
+      const row6 = worksheet.getRow(headerPage + 6); row6.height = 15;
+    }
 
     return worksheet;
   }
 
   reportHeader(worksheet, headerPage, list): any {
-    if (list && (list.aspirantes.sindicato.length > 0 || list.aspirantes.instituto.length > 0)) {
+    let inicio = this.bodyIndex == 0 ? 0 : this.bodyIndex * 30;
+    if (list && (list.aspirantes.instituto[inicio] || list.aspirantes.sindicato[inicio])) {
       worksheet.pageSetup.printArea = `A1:U${headerPage + 48}`;
 
       worksheet.mergeCells(`A${headerPage + 1}:U${headerPage + 1}`);
@@ -297,7 +298,8 @@ export class AspirantesRepository {
   }
 
   pageHeaderData(worksheet, headerPage, subcomision, element): any {
-    if (element) {
+    let inicio = this.bodyIndex == 0 ? 0 : this.bodyIndex * 30;
+    if (element && (element.aspirantes.instituto[inicio] || element.aspirantes.sindicato[inicio])) {
       worksheet.mergeCells(`A${headerPage + 4}:C${headerPage + 4}`);
       worksheet.getCell(`A${headerPage + 4}`).style = { font: { size: 9, name: 'Century Gothic' }, alignment: { vertical: 'bottom', horizontal: 'right' } };
       worksheet.getCell(`A${headerPage + 4}`).value = 'SUBCOMISIÓN MIXTA DE BOLSA DE TRABAJO EN:';
@@ -346,33 +348,34 @@ export class AspirantesRepository {
     return worksheet;
   }
 
-  reportBodyRowSize(worksheet, headerPage): any {
+  reportBodyRowSize(worksheet, headerPage, listByIndex): any {
+    let inicio = this.bodyIndex == 0 ? 0 : this.bodyIndex * 30;
+    if (listByIndex && (listByIndex.aspirantes.instituto[inicio] || listByIndex.aspirantes.sindicato[inicio])) {
+      const row1 = worksheet.getRow(headerPage + 7); row1.height = 21.75;
 
-    const row1 = worksheet.getRow(headerPage + 7); row1.height = 21.75;
+      let row = [];
+      for (let i = headerPage; i < headerPage + 30; i++) {
+        row[i] = worksheet.getRow(8 + i); row[i].height = 10.6;
+      }
 
-    let row = [];
-    for (let i = headerPage; i < headerPage + 30; i++) {
-      row[i] = worksheet.getRow(8 + i); row[i].height = 10.6;
+      const row2 = worksheet.getRow(headerPage + 38); row2.height = 11.25;
+      const row3 = worksheet.getRow(headerPage + 39); row3.height = 13.5;
+      const row4 = worksheet.getRow(headerPage + 40); row4.height = 28.50;
+      const row5 = worksheet.getRow(headerPage + 41); row5.height = 15;
+      const row6 = worksheet.getRow(headerPage + 42); row6.height = 9.75;
+      const row7 = worksheet.getRow(headerPage + 43); row7.height = 15;
+      const row8 = worksheet.getRow(headerPage + 44); row8.height = 14.25;
+      const row9 = worksheet.getRow(headerPage + 45); row9.height = 15;
+      const row10 = worksheet.getRow(headerPage + 46); row10.height = 15;
+      const row11 = worksheet.getRow(headerPage + 47); row11.height = 9.75;
+      const row12 = worksheet.getRow(headerPage + 48); row12.height = 15;
     }
-
-    const row2 = worksheet.getRow(headerPage + 38); row2.height = 11.25;
-    const row3 = worksheet.getRow(headerPage + 39); row3.height = 13.5;
-    const row4 = worksheet.getRow(headerPage + 40); row4.height = 28.50;
-    const row5 = worksheet.getRow(headerPage + 41); row5.height = 15;
-    const row6 = worksheet.getRow(headerPage + 42); row6.height = 9.75;
-    const row7 = worksheet.getRow(headerPage + 43); row7.height = 15;
-    const row8 = worksheet.getRow(headerPage + 44); row8.height = 14.25;
-    const row9 = worksheet.getRow(headerPage + 45); row9.height = 15;
-    const row10 = worksheet.getRow(headerPage + 46); row10.height = 15;
-    const row11 = worksheet.getRow(headerPage + 47); row11.height = 9.75;
-    const row12 = worksheet.getRow(headerPage + 48); row12.height = 15;
-
     return worksheet;
   }
 
   reportBodyData(list, worksheet, headerPage, subcomision, page, listByIndex): any {
-
-    if (listByIndex) {
+    let inicio = this.bodyIndex == 0 ? 0 : this.bodyIndex * 30;
+    if (listByIndex && (listByIndex.aspirantes.instituto[inicio] || listByIndex.aspirantes.sindicato[inicio])) {
       worksheet.getCell(`A${headerPage + 7}`).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
       worksheet.getCell(`A${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
       worksheet.getCell(`A${headerPage + 7}`).value = 'No.';
@@ -454,7 +457,6 @@ export class AspirantesRepository {
       worksheet.getCell(`U${headerPage + 7}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
       worksheet.getCell(`U${headerPage + 7}`).value = 'MOTIVO BAJA';
 
-      let inicio = this.bodyIndex == 0 ? 0 : this.bodyIndex * 30;
       for (let i = 0; i < 30; i++) {
         worksheet.getCell(`A${headerPage + (8 + i)}`).style = { font: { size: 7, name: 'Montserrat' }, alignment: { vertical: 'middle', horizontal: 'center' } };
         worksheet.getCell(`A${headerPage + (8 + i)}`).border = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
@@ -549,18 +551,21 @@ export class AspirantesRepository {
 
       }
 
+    }
+
+    let newPage = page;
+    if (listByIndex) {
       if (this.bodyIndex < Math.floor(listByIndex.aspirantes.instituto.length / 30) || this.bodyIndex < Math.floor(listByIndex.aspirantes.sindicato.length / 30)) {
         this.bodyIndex++;
       } else {
         this.bodyIndex = 0;
         this.headerIndex++;
       }
-
-      console.log('======================');
-      console.log(this.bodyIndex);
-      console.log(this.headerIndex);
-
-      this.genExcelContent(list, worksheet, subcomision, page + 1);
+      
+      if (listByIndex.aspirantes.instituto[inicio] || listByIndex.aspirantes.sindicato[inicio]) {
+        newPage = newPage + 1;
+      }
+      this.genExcelContent(list, worksheet, subcomision, newPage);
     }
 
     return worksheet;

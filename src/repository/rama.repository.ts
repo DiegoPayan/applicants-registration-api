@@ -1,5 +1,6 @@
 import { getManager } from 'typeorm';
 import { Rama } from '../entity/rama.entity';
+import { Aspirantes } from '../entity/aspirantes.entity';
 import { Response } from '../dto/response.dto';
 import * as message from '../const/rama.const';
 
@@ -34,6 +35,14 @@ export class RamaRepository {
 
   async update(id: number, rama: Rama): Promise<Response> {
     let response = new Response();
+    if (rama.estatus == 'INACTIVO') {
+      let resultadoAspirantes = await getManager().getRepository(Aspirantes).count({ idRama : id });
+      if (resultadoAspirantes > 0) {
+        response.status = 400;
+        response.message = message.ERROR_DISABLE_RAMA;
+        return response;
+      }
+    }
     let resultadoRama = await getManager().getRepository(Rama).update({ id }, rama);
     if (resultadoRama) {
       response.data = resultadoRama;
@@ -41,7 +50,7 @@ export class RamaRepository {
       response.status = 200;
     } else {
       response.status = 400;
-      response.message = message.ERROR_SAVE_RAMA;
+      response.message = message.ERROR_UPDATE_RAMA;
     }
     return response;
   }

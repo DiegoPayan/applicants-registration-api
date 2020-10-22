@@ -1,4 +1,5 @@
 import { getManager } from 'typeorm';
+import { Aspirantes } from '../entity/aspirantes.entity';
 import { Estudios } from '../entity/estudios.entity';
 import { Response } from '../dto/response.dto';
 import * as message from '../const/estudios.const';
@@ -34,6 +35,14 @@ export class EstudiosRepository {
 
   async update(id: number, estudios: Estudios): Promise<Response> {
     let response = new Response();
+    if (estudios.estatus == 'INACTIVO') {
+      let resultadoAspirantes = await getManager().getRepository(Aspirantes).count({ idEstudios: id });
+      if(resultadoAspirantes > 0) {
+        response.status = 400;
+        response.message = message.ERROR_DISABLE_ESTUDIOS;
+        return response;
+      }
+    }
     let resultadoEstudio = await getManager().getRepository(Estudios).update({ id }, estudios);
     if (resultadoEstudio) {
       response.data = resultadoEstudio;
@@ -41,7 +50,7 @@ export class EstudiosRepository {
       response.status = 200;
     } else {
       response.status = 400;
-      response.message = message.ERROR_SAVE_ESTUDIOS;
+      response.message = message.ERROR_UPDATE_ESTUDIOS;
     }
     return response;
   }

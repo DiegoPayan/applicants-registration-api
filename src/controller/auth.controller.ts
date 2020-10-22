@@ -16,8 +16,10 @@ redisService.on('error', (err) => {
 router.post('/', (req, res) => {
     let clave = req.body.clave;
     usuariosRepository.getByClave(clave).then((response) => {
-        let decoded = jwtDecode(response.data);
-        redisService.set(`tkn-${decoded.usuario.id}`, response.data.toString())
+        if (response.status == 200) {
+            let decoded = jwtDecode(response.data);
+            redisService.set(`tkn-${decoded.usuario.id}`, response.data.toString())
+        }
         res.status(response.status).send(response);
     });
 });

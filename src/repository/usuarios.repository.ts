@@ -22,8 +22,13 @@ export class UsuariosRepository {
     }
 
     async getByClave(clave): Promise<Response> {
-        let result = await getManager().getRepository(Usuarios).findOne({ clave: clave, estatus: 'ACTIVO' });
         let response = new Response();
+        if (clave.length == 0) {
+            response.status = 400;
+            response.message = message.CREDENCIALES_NO_PROPORCIONADAS;
+            return response;
+        }
+        let result = await getManager().getRepository(Usuarios).findOne({ clave: clave, estatus: 'ACTIVO' });
         if (result) {
             let cleanResult = Object.assign(result, {});
             delete cleanResult.clave;

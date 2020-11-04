@@ -10,7 +10,7 @@ import { Response } from '../dto/response.dto';
 import { isObjectEmpty } from '../utils/isEmpty';
 import { compararFolios } from '../utils/compararFolio';
 
-import { Workbook, Row, Cell, Worksheet } from 'exceljs';
+import { Workbook } from 'exceljs';
 
 import * as message from '../const/aspirantes.const';
 
@@ -174,7 +174,7 @@ export class AspirantesRepository {
       let resultadoAspirante = await getManager().getRepository(Aspirantes).save(aspirante);
       if (resultadoAspirante) {
         response.data = resultadoAspirante;
-        response.data = message.SUCCESS_SAVE_ASPIRANTE;
+        response.message = message.SUCCESS_SAVE_ASPIRANTE;
         response.status = 200;
       }
     } else {
@@ -186,15 +186,23 @@ export class AspirantesRepository {
 
   async update(id: Number, aspirante: Aspirantes): Promise<Response> {
     let response = new Response();
-
+    let preConsultaAspirante = await getManager().getRepository(Aspirantes).findOne({ id });
     let resultadoAspirante = await getManager().getRepository(Aspirantes).update({ id }, aspirante);
+    let postConsultaAspirante = await getManager().getRepository(Aspirantes).findOne({ id });
+    let modificaciones = [];
+    await Object.entries(preConsultaAspirante).forEach(([key, value]) => {
+      if (postConsultaAspirante[key].toString() != value.toString()) {
+        modificaciones.push({ [key]: [value, postConsultaAspirante[key]] });
+      }
+    });
+    modificaciones.unshift({ idAspirante: id });
     if (resultadoAspirante) {
-      response.data = resultadoAspirante;
-      response.message = message.SUCCESS_SAVE_ASPIRANTE;
+      response.data = modificaciones;
+      response.message = message.SUCCESS_UPDATE_ASPIRANTE;
       response.status = 200;
     } else {
       response.status = 400;
-      response.message = message.ERROR_GUARDAR_ASPIRANTE;
+      response.message = message.ERROR_UPDATE_ASPIRANTE;
     }
 
     return response;

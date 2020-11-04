@@ -111,3 +111,16 @@ CREATE TABLE usuarios (
 INSERT INTO servicio.usuarios(clave, nombre, apellidoPaterno, apellidoMaterno, permisos) VALUES
 ("dp12","Diego","Payan","Lopez","LECTURA"),("mm12","Mayela","Madrid","Gutiérrez","CREACION"),
 ("nz12","Nicolas","Zavala","Sajaropulos","LECTURA");
+
+
+CREATE TABLE historial_aspirantes (
+	id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    idUsuario INT UNSIGNED NOT NULL DEFAULT 0,
+    idAspirante INT NOT NULL DEFAULT 0,
+    tipo VARCHAR(10) NOT NULL DEFAULT "",
+    dato VARCHAR(100) NOT NULL DEFAULT "",
+    antes VARCHAR(150) NOT NULL DEFAULT "",
+    despues VARCHAR(150) NOT NULL DEFAULT "",
+    fecha TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	FOREIGN KEY (idUsuario) REFERENCES usuarios (id)
+);

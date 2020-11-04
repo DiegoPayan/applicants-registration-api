@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
-import { Workbook } from 'exceljs';
 
 import { AspirantesRepository } from '../repository/aspirantes.repository';
+import { HistorialAspirantesRepository } from '../repository/historialAspirantes.repository';
 import { isObjectEmpty } from '../utils/isEmpty';
 
 const aspirantesRepository = new AspirantesRepository();
+const historialAspirantesRepository = new HistorialAspirantesRepository();
 
 router.get('/', (req, res) => {
   aspirantesRepository.getAll().then((response) => {
@@ -63,6 +64,7 @@ router.put('/:idAspirante', (req, res) => {
   let id = req.params.idAspirante;
   if (!isObjectEmpty(aspirante)) {
     aspirantesRepository.update(id, aspirante).then((response) => {
+      historialAspirantesRepository.buildInsert(req, response);
       res.send(response);
     });
   } else {

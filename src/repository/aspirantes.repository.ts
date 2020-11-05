@@ -1014,11 +1014,11 @@ export class AspirantesRepository {
 
       worksheet.mergeCells(`B${headerPage + 43}: C${headerPage + 43} `);
       worksheet.getCell(`B${headerPage + 43} `).style = { font: { size: 6, name: 'Calibri' }, alignment: { vertical: 'top', horizontal: 'center' } };
-      worksheet.getCell(`B${headerPage + 43} `).value = consultaConfiguracion[0].puesto || '';
+      worksheet.getCell(`B${headerPage + 43} `).value = consultaConfiguracion[0] && consultaConfiguracion[0].puesto ? consultaConfiguracion[0].puesto : '';
 
       worksheet.mergeCells(`J${headerPage + 43}: M${headerPage + 43} `);
       worksheet.getCell(`J${headerPage + 43} `).style = { font: { size: 6, name: 'Calibri' }, alignment: { vertical: 'top', horizontal: 'center' } };
-      worksheet.getCell(`J${headerPage + 43} `).value = consultaConfiguracion[3].puesto || '';
+      worksheet.getCell(`J${headerPage + 43} `).value = consultaConfiguracion[3] && consultaConfiguracion[3].puesto ? consultaConfiguracion[3].puesto : '';
 
       worksheet.mergeCells(`B${headerPage + 46}: C${headerPage + 46} `);
       worksheet.getCell(`B${headerPage + 46}`).border = { bottom: { style: 'thin' } };
@@ -1031,27 +1031,27 @@ export class AspirantesRepository {
 
       worksheet.mergeCells(`B${headerPage + 47}: C${headerPage + 47} `);
       worksheet.getCell(`B${headerPage + 47} `).style = { font: { size: 6, name: 'Calibri' }, alignment: { vertical: 'bottom', horizontal: 'center' } };
-      worksheet.getCell(`B${headerPage + 47} `).value = consultaConfiguracion[1].nombre || '';
+      worksheet.getCell(`B${headerPage + 47} `).value = consultaConfiguracion[1] && consultaConfiguracion[1].nombre ? consultaConfiguracion[1].nombre : '';
 
       worksheet.mergeCells(`D${headerPage + 47}: I${headerPage + 47} `);
       worksheet.getCell(`D${headerPage + 47} `).style = { font: { size: 6, name: 'Calibri' }, alignment: { vertical: 'bottom', horizontal: 'center' } };
-      worksheet.getCell(`D${headerPage + 47} `).value = consultaConfiguracion[2].nombre || '';
+      worksheet.getCell(`D${headerPage + 47} `).value = consultaConfiguracion[2] && consultaConfiguracion[2].nombre ? consultaConfiguracion[2].nombre : '';
 
       worksheet.mergeCells(`J${headerPage + 47}: M${headerPage + 47} `);
       worksheet.getCell(`J${headerPage + 47} `).style = { font: { size: 6, name: 'Calibri' }, alignment: { vertical: 'bottom', horizontal: 'center' } };
-      worksheet.getCell(`J${headerPage + 47} `).value = consultaConfiguracion[4].nombre || '';
+      worksheet.getCell(`J${headerPage + 47} `).value = consultaConfiguracion[4] && consultaConfiguracion[4].nombre ? consultaConfiguracion[4].nombre : '';
 
       worksheet.mergeCells(`B${headerPage + 48}: C${headerPage + 48} `);
       worksheet.getCell(`B${headerPage + 48} `).style = { font: { size: 6, name: 'Calibri' }, alignment: { vertical: 'top', horizontal: 'center' } };
-      worksheet.getCell(`B${headerPage + 48} `).value = consultaConfiguracion[1].puesto || '';
+      worksheet.getCell(`B${headerPage + 48} `).value = consultaConfiguracion[1] && consultaConfiguracion[1].puesto ? consultaConfiguracion[1].puesto : '';
 
       worksheet.mergeCells(`D${headerPage + 48}: I${headerPage + 48} `);
       worksheet.getCell(`D${headerPage + 48} `).style = { font: { size: 6, name: 'Calibri' }, alignment: { vertical: 'top', horizontal: 'center' } };
-      worksheet.getCell(`D${headerPage + 48} `).value = consultaConfiguracion[2].puesto || '';
+      worksheet.getCell(`D${headerPage + 48} `).value = consultaConfiguracion[2] && consultaConfiguracion[2].puesto ? consultaConfiguracion[2].puesto : '';
 
       worksheet.mergeCells(`J${headerPage + 48}: M${headerPage + 48} `);
       worksheet.getCell(`J${headerPage + 48} `).style = { font: { size: 6, name: 'Calibri' }, alignment: { vertical: 'top', horizontal: 'center' } };
-      worksheet.getCell(`J${headerPage + 48} `).value = consultaConfiguracion[4].puesto || '';
+      worksheet.getCell(`J${headerPage + 48} `).value = consultaConfiguracion[4] && consultaConfiguracion[4].puesto ? consultaConfiguracion[1].puesto : '';
     }
     return worksheet;
   }

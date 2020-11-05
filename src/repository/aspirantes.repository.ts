@@ -5,12 +5,13 @@ import { Puntaje } from '../entity/puntaje.entity';
 import { Rama } from '../entity/rama.entity';
 import { Zona } from '../entity/zona.entity';
 import { Puesto } from '../entity/puesto.entity';
+import { Configuracion } from '../entity/configuracion.entity';
 import { Response } from '../dto/response.dto';
 
 import { isObjectEmpty } from '../utils/isEmpty';
 import { compararFolios } from '../utils/compararFolio';
 
-import { Workbook } from 'exceljs';
+import { Workbook, Worksheet } from 'exceljs';
 
 import * as message from '../const/aspirantes.const';
 
@@ -233,37 +234,43 @@ export class AspirantesRepository {
       };
     }
 
-    if (tipoLista == 'puntuación') {
+    if (tipoLista == 'puntuacion') {
       worksheet = this.reportColumnSizePuntuacion(worksheet);
     } else {
       worksheet = this.reportColumnSizeCronologico(worksheet);
     }
 
-    worksheet = this.genExcelContent(tipoLista, workbook, list, worksheet, subcomision, 0);
+    let consultaConfiguracion = await getManager().getRepository(Configuracion).find();
+    consultaConfiguracion.sort((a,b) => {
+      if(a.orden < b.orden) return -1;
+      if(a.orden > b.orden) return 1;
+    });
+
+    worksheet = this.genExcelContent(tipoLista, workbook, list, worksheet, subcomision, 0, consultaConfiguracion);
 
     return workbook;
   }
 
   headerIndex = 0;
   bodyIndex = 0;
-  genExcelContent(tipoLista, workbook, list, worksheet, subcomision, page): any {
+  genExcelContent(tipoLista, workbook, list, worksheet, subcomision, page, consultaConfiguracion): any {
     let headerPage;
-    if (tipoLista == 'puntuación') {
+    if (tipoLista == 'puntuacion') {
       headerPage = page * 48;
       worksheet = this.reportHeaderRowSizePuntuacion(worksheet, headerPage, list[this.headerIndex]);
       worksheet = this.reportHeaderPuntuacion(workbook, worksheet, headerPage, list[this.headerIndex]);
       worksheet = this.pageHeaderDataPuntuacion(worksheet, headerPage, subcomision, list[this.headerIndex]);
       worksheet = this.reportBodyRowSizePuntuacion(worksheet, headerPage, list[this.headerIndex]);
-      worksheet = this.reportFooterPuntuacion(workbook, worksheet, headerPage, list[this.headerIndex]);
-      worksheet = this.reportBodyDataPuntuacion(tipoLista, workbook, list, worksheet, headerPage, subcomision, page, list[this.headerIndex]);
+      worksheet = this.reportFooterPuntuacion(workbook, worksheet, headerPage, list[this.headerIndex], consultaConfiguracion);
+      worksheet = this.reportBodyDataPuntuacion(tipoLista, workbook, list, worksheet, headerPage, subcomision, page, list[this.headerIndex], consultaConfiguracion);
     } else {
       headerPage = page * 49
       worksheet = this.reportHeaderRowSizeCronologico(worksheet, headerPage, list[this.headerIndex]);
       worksheet = this.reportHeaderCronologico(workbook, worksheet, headerPage, list[this.headerIndex]);
       worksheet = this.pageHeaderDataCronologico(worksheet, headerPage, subcomision, list[this.headerIndex]);
       worksheet = this.reportBodyRowSizeCronologico(worksheet, headerPage, list[this.headerIndex]);
-      worksheet = this.reportFooterCronologico(workbook, worksheet, headerPage, list[this.headerIndex]);
-      worksheet = this.reportBodyDataCronologico(tipoLista, workbook, list, worksheet, headerPage, subcomision, page, list[this.headerIndex]);
+      worksheet = this.reportFooterCronologico(workbook, worksheet, headerPage, list[this.headerIndex], consultaConfiguracion);
+      worksheet = this.reportBodyDataCronologico(tipoLista, workbook, list, worksheet, headerPage, subcomision, page, list[this.headerIndex], consultaConfiguracion);
     }
     return worksheet;
   }
@@ -420,7 +427,7 @@ export class AspirantesRepository {
     return worksheet;
   }
 
-  reportBodyDataPuntuacion(tipoLista, workbook, list, worksheet, headerPage, subcomision, page, listByIndex): any {
+  reportBodyDataPuntuacion(tipoLista, workbook, list, worksheet, headerPage, subcomision, page, listByIndex, consultaConfiguracion): any {
     let inicio = this.bodyIndex == 0 ? 0 : this.bodyIndex * 30;
     if (listByIndex && (listByIndex.aspirantes.instituto[inicio] || listByIndex.aspirantes.sindicato[inicio])) {
 
@@ -613,25 +620,15 @@ export class AspirantesRepository {
       if (listByIndex.aspirantes.instituto[inicio] || listByIndex.aspirantes.sindicato[inicio]) {
         newPage = newPage + 1;
       }
-      this.genExcelContent(tipoLista, workbook, list, worksheet, subcomision, newPage);
+      this.genExcelContent(tipoLista, workbook, list, worksheet, subcomision, newPage, consultaConfiguracion);
     }
 
     return worksheet;
   }
 
-  reportFooterPuntuacion(workbook, worksheet, headerPage, list): any {
+  reportFooterPuntuacion(workbook, worksheet, headerPage, list, consultaConfiguracion): any {
     let inicio = this.bodyIndex == 0 ? 0 : this.bodyIndex * 30;
-    if (list && (list.aspirantes.instituto[inicio] || list.aspirantes.sindicato[inicio])) {
-
-      const line = workbook.addImage({
-        filename: './src/img/line.png',
-        extension: 'png',
-      });
-
-      const middleLine = workbook.addImage({
-        filename: './src/img/middle-line.png',
-        extension: 'png',
-      });
+    if (list && (list.aspirantes.instituto[inicio] || list.aspirantes.sindicato[inicio]) && consultaConfiguracion) {
 
       worksheet.mergeCells(`A${headerPage + 38}: M${headerPage + 38} `);
       worksheet.getCell(`A${headerPage + 38} `).style = { font: { size: 6, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'left' } };
@@ -658,19 +655,19 @@ export class AspirantesRepository {
 
       worksheet.mergeCells(`B${headerPage + 42}: F${headerPage + 42} `);
       worksheet.getCell(`B${headerPage + 42} `).style = { font: { size: 6, name: 'Calibri' }, alignment: { vertical: 'top', horizontal: 'center' } };
-      worksheet.getCell(`B${headerPage + 42} `).value = 'ING. JOSE PABLO ZAMORA VILLEGAS';
+      worksheet.getCell(`B${headerPage + 42} `).value = consultaConfiguracion[0] && consultaConfiguracion[0].nombre ? consultaConfiguracion[0].nombre : '';
 
       worksheet.mergeCells(`N${headerPage + 42}: U${headerPage + 42} `);
       worksheet.getCell(`N${headerPage + 42} `).style = { font: { size: 6, name: 'Calibri' }, alignment: { vertical: 'top', horizontal: 'center' } };
-      worksheet.getCell(`N${headerPage + 42} `).value = 'LIC. ENF. MARIA ELENA RUBIO ALDANA';
+      worksheet.getCell(`N${headerPage + 42} `).value = consultaConfiguracion[3] && consultaConfiguracion[3].nombre ? consultaConfiguracion[3].nombre : '';
 
       worksheet.mergeCells(`B${headerPage + 43}: F${headerPage + 43} `);
       worksheet.getCell(`B${headerPage + 43} `).style = { font: { size: 6, name: 'Calibri' }, alignment: { vertical: 'top', horizontal: 'center' } };
-      worksheet.getCell(`B${headerPage + 43} `).value = 'REPRESENTANTE PROPIETARIO';
+      worksheet.getCell(`B${headerPage + 43} `).value = consultaConfiguracion[0] && consultaConfiguracion[0].puesto ? consultaConfiguracion[0].puesto : '';
 
       worksheet.mergeCells(`N${headerPage + 43}: U${headerPage + 43} `);
       worksheet.getCell(`N${headerPage + 43} `).style = { font: { size: 6, name: 'Calibri' }, alignment: { vertical: 'top', horizontal: 'center' } };
-      worksheet.getCell(`N${headerPage + 43} `).value = 'REPRESENTANTE PROPIETARIO';
+      worksheet.getCell(`N${headerPage + 43} `).value = consultaConfiguracion[3] && consultaConfiguracion[3].puesto ? consultaConfiguracion[3].puesto : '';
 
       worksheet.mergeCells(`B${headerPage + 46}: F${headerPage + 46} `);
       worksheet.getCell(`B${headerPage + 46}`).border = { bottom: { style: 'thin' } };
@@ -683,27 +680,27 @@ export class AspirantesRepository {
 
       worksheet.mergeCells(`B${headerPage + 47}: F${headerPage + 47} `);
       worksheet.getCell(`B${headerPage + 47} `).style = { font: { size: 6, name: 'Calibri' }, alignment: { vertical: 'top', horizontal: 'center' } };
-      worksheet.getCell(`B${headerPage + 47} `).value = 'L.E. ROSA MARIA LORENZA LEAL';
+      worksheet.getCell(`B${headerPage + 47} `).value = consultaConfiguracion[1] && consultaConfiguracion[1].nombre ? consultaConfiguracion[1].nombre : '';
 
       worksheet.mergeCells(`I${headerPage + 47}: M${headerPage + 47} `);
       worksheet.getCell(`I${headerPage + 47} `).style = { font: { size: 6, name: 'Calibri' }, alignment: { vertical: 'top', horizontal: 'center' } };
-      worksheet.getCell(`I${headerPage + 47} `).value = 'LIC. JUAN CARLOS ARMENTA CASTRO';
+      worksheet.getCell(`I${headerPage + 47} `).value = consultaConfiguracion[2] && consultaConfiguracion[2].nombre ? consultaConfiguracion[2].nombre : '';
 
       worksheet.mergeCells(`N${headerPage + 47}: U${headerPage + 47} `);
       worksheet.getCell(`N${headerPage + 47} `).style = { font: { size: 6, name: 'Calibri' }, alignment: { vertical: 'top', horizontal: 'center' } };
-      worksheet.getCell(`N${headerPage + 47} `).value = 'C.P RAFAEL ESCOBAR CERVANTES';
+      worksheet.getCell(`N${headerPage + 47} `).value = consultaConfiguracion[4] && consultaConfiguracion[4].nombre ? consultaConfiguracion[4].nombre : '';
 
       worksheet.mergeCells(`B${headerPage + 48}: F${headerPage + 48} `);
       worksheet.getCell(`B${headerPage + 48} `).style = { font: { size: 6, name: 'Calibri' }, alignment: { vertical: 'top', horizontal: 'center' } };
-      worksheet.getCell(`B${headerPage + 48} `).value = 'REPRESENTANTE PROPIETARIO';
+      worksheet.getCell(`B${headerPage + 48} `).value = consultaConfiguracion[1] && consultaConfiguracion[1].puesto ? consultaConfiguracion[1].puesto : '';
 
       worksheet.mergeCells(`I${headerPage + 48}: M${headerPage + 48} `);
       worksheet.getCell(`I${headerPage + 48} `).style = { font: { size: 6, name: 'Calibri' }, alignment: { vertical: 'top', horizontal: 'center' } };
-      worksheet.getCell(`I${headerPage + 48} `).value = 'REPRESENTANTE PROPIETARIO';
+      worksheet.getCell(`I${headerPage + 48} `).value = consultaConfiguracion[2] && consultaConfiguracion[2].puesto ? consultaConfiguracion[2].puesto : '';
 
       worksheet.mergeCells(`N${headerPage + 48}: U${headerPage + 48} `);
       worksheet.getCell(`N${headerPage + 48} `).style = { font: { size: 6, name: 'Calibri' }, alignment: { vertical: 'top', horizontal: 'center' } };
-      worksheet.getCell(`N${headerPage + 48} `).value = 'REPRESENTANTE PROPIETARIO';
+      worksheet.getCell(`N${headerPage + 48} `).value = consultaConfiguracion[4] && consultaConfiguracion[4].puesto ? consultaConfiguracion[4].puesto : '';
     }
     return worksheet;
   }
@@ -853,7 +850,7 @@ export class AspirantesRepository {
     return worksheet;
   }
 
-  reportBodyDataCronologico(tipoLista, workbook, list, worksheet, headerPage, subcomision, page, listByIndex): any {
+  reportBodyDataCronologico(tipoLista, workbook, list, worksheet, headerPage, subcomision, page, listByIndex, consultaConfiguracion): any {
     let inicio = this.bodyIndex == 0 ? 0 : this.bodyIndex * 30;
     if (listByIndex && (listByIndex.aspirantes.instituto[inicio] || listByIndex.aspirantes.sindicato[inicio])) {
 
@@ -982,25 +979,15 @@ export class AspirantesRepository {
       if (listByIndex.aspirantes.instituto[inicio] || listByIndex.aspirantes.sindicato[inicio]) {
         newPage = newPage + 1;
       }
-      this.genExcelContent(tipoLista, workbook, list, worksheet, subcomision, newPage);
+      this.genExcelContent(tipoLista, workbook, list, worksheet, subcomision, newPage, consultaConfiguracion);
     }
 
     return worksheet;
   }
 
-  reportFooterCronologico(workbook, worksheet, headerPage, list): any {
+  reportFooterCronologico(workbook, worksheet, headerPage, list, consultaConfiguracion): any {
     let inicio = this.bodyIndex == 0 ? 0 : this.bodyIndex * 30;
-    if (list && (list.aspirantes.instituto[inicio] || list.aspirantes.sindicato[inicio])) {
-
-      const line = workbook.addImage({
-        filename: './src/img/line.png',
-        extension: 'png',
-      });
-
-      const middleLine = workbook.addImage({
-        filename: './src/img/middle-line.png',
-        extension: 'png',
-      });
+    if (list && (list.aspirantes.instituto[inicio] || list.aspirantes.sindicato[inicio]) && consultaConfiguracion) {
 
       worksheet.mergeCells(`B${headerPage + 39}: C${headerPage + 39} `);
       worksheet.getCell(`B${headerPage + 39} `).style = { font: { size: 7, bold: true, name: 'Century Gothic' }, alignment: { vertical: 'middle', horizontal: 'center' } };
@@ -1019,19 +1006,19 @@ export class AspirantesRepository {
 
       worksheet.mergeCells(`B${headerPage + 42}: C${headerPage + 42} `);
       worksheet.getCell(`B${headerPage + 42} `).style = { font: { size: 6, name: 'Calibri' }, alignment: { vertical: 'bottom', horizontal: 'center' } };
-      worksheet.getCell(`B${headerPage + 42} `).value = 'ING. JOSE PABLO ZAMORA VILLEGAS';
+      worksheet.getCell(`B${headerPage + 42} `).value = consultaConfiguracion[0] && consultaConfiguracion[0].nombre ? consultaConfiguracion[0].nombre : '';
 
       worksheet.mergeCells(`J${headerPage + 42}: M${headerPage + 42} `);
       worksheet.getCell(`J${headerPage + 42} `).style = { font: { size: 6, name: 'Calibri' }, alignment: { vertical: 'bottom', horizontal: 'center' } };
-      worksheet.getCell(`J${headerPage + 42} `).value = 'LIC. ENF. MARIA ELENA RUBIO ALDANA';
+      worksheet.getCell(`J${headerPage + 42} `).value = consultaConfiguracion[3] && consultaConfiguracion[3].nombre ? consultaConfiguracion[3].nombre : '';
 
       worksheet.mergeCells(`B${headerPage + 43}: C${headerPage + 43} `);
       worksheet.getCell(`B${headerPage + 43} `).style = { font: { size: 6, name: 'Calibri' }, alignment: { vertical: 'top', horizontal: 'center' } };
-      worksheet.getCell(`B${headerPage + 43} `).value = 'REPRESENTANTE PROPIETARIO';
+      worksheet.getCell(`B${headerPage + 43} `).value = consultaConfiguracion[0].puesto || '';
 
       worksheet.mergeCells(`J${headerPage + 43}: M${headerPage + 43} `);
       worksheet.getCell(`J${headerPage + 43} `).style = { font: { size: 6, name: 'Calibri' }, alignment: { vertical: 'top', horizontal: 'center' } };
-      worksheet.getCell(`J${headerPage + 43} `).value = 'REPRESENTANTE PROPIETARIO';
+      worksheet.getCell(`J${headerPage + 43} `).value = consultaConfiguracion[3].puesto || '';
 
       worksheet.mergeCells(`B${headerPage + 46}: C${headerPage + 46} `);
       worksheet.getCell(`B${headerPage + 46}`).border = { bottom: { style: 'thin' } };
@@ -1044,27 +1031,27 @@ export class AspirantesRepository {
 
       worksheet.mergeCells(`B${headerPage + 47}: C${headerPage + 47} `);
       worksheet.getCell(`B${headerPage + 47} `).style = { font: { size: 6, name: 'Calibri' }, alignment: { vertical: 'bottom', horizontal: 'center' } };
-      worksheet.getCell(`B${headerPage + 47} `).value = 'L.E. ROSA MARIA LORENZA LEAL';
+      worksheet.getCell(`B${headerPage + 47} `).value = consultaConfiguracion[1].nombre || '';
 
       worksheet.mergeCells(`D${headerPage + 47}: I${headerPage + 47} `);
       worksheet.getCell(`D${headerPage + 47} `).style = { font: { size: 6, name: 'Calibri' }, alignment: { vertical: 'bottom', horizontal: 'center' } };
-      worksheet.getCell(`D${headerPage + 47} `).value = 'LIC. JUAN CARLOS ARMENTA CASTRO';
+      worksheet.getCell(`D${headerPage + 47} `).value = consultaConfiguracion[2].nombre || '';
 
       worksheet.mergeCells(`J${headerPage + 47}: M${headerPage + 47} `);
       worksheet.getCell(`J${headerPage + 47} `).style = { font: { size: 6, name: 'Calibri' }, alignment: { vertical: 'bottom', horizontal: 'center' } };
-      worksheet.getCell(`J${headerPage + 47} `).value = 'C.P RAFAEL ESCOBAR CERVANTES';
+      worksheet.getCell(`J${headerPage + 47} `).value = consultaConfiguracion[4].nombre || '';
 
       worksheet.mergeCells(`B${headerPage + 48}: C${headerPage + 48} `);
       worksheet.getCell(`B${headerPage + 48} `).style = { font: { size: 6, name: 'Calibri' }, alignment: { vertical: 'top', horizontal: 'center' } };
-      worksheet.getCell(`B${headerPage + 48} `).value = 'REPRESENTANTE PROPIETARIO';
+      worksheet.getCell(`B${headerPage + 48} `).value = consultaConfiguracion[1].puesto || '';
 
       worksheet.mergeCells(`D${headerPage + 48}: I${headerPage + 48} `);
       worksheet.getCell(`D${headerPage + 48} `).style = { font: { size: 6, name: 'Calibri' }, alignment: { vertical: 'top', horizontal: 'center' } };
-      worksheet.getCell(`D${headerPage + 48} `).value = 'REPRESENTANTE PROPIETARIO';
+      worksheet.getCell(`D${headerPage + 48} `).value = consultaConfiguracion[2].puesto || '';
 
       worksheet.mergeCells(`J${headerPage + 48}: M${headerPage + 48} `);
       worksheet.getCell(`J${headerPage + 48} `).style = { font: { size: 6, name: 'Calibri' }, alignment: { vertical: 'top', horizontal: 'center' } };
-      worksheet.getCell(`J${headerPage + 48} `).value = 'REPRESENTANTE PROPIETARIO';
+      worksheet.getCell(`J${headerPage + 48} `).value = consultaConfiguracion[4].puesto || '';
     }
     return worksheet;
   }

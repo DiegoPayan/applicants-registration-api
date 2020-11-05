@@ -18,6 +18,7 @@ app.get('/', function (req, res) { res.send('Hola Mundo') });
 app.get('/api', function (req, res) { res.send('Hola Mundo') });
 app.use('/api/aspirantes', protectedRoute, require('./src/controller/aspirantes.controller'));
 app.use('/api/historial', protectedRoute, require('./src/controller/historialAspirantes.controller'));
+app.use('/api/configuracion', protectedRoute, require('./src/controller/configuracion.controller'));
 app.use('/api/estudios', protectedRoute, require('./src/controller/estudios.controller'));
 app.use('/api/puestos', protectedRoute, require('./src/controller/puesto.controller'));
 app.use('/api/ramas', protectedRoute, require('./src/controller/rama.controller'));

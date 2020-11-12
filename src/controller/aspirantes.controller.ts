@@ -60,10 +60,11 @@ router.post('/', (req, res) => {
 });
 
 router.put('/:idAspirante', (req, res) => {
-  let aspirante = req.body;
+  let aspirante = req.body.aspirante;
+  let puntaje = req.body.puntaje;
   let id = req.params.idAspirante;
   if (!isObjectEmpty(aspirante)) {
-    aspirantesRepository.update(id, aspirante).then((response) => {
+    aspirantesRepository.update(id, aspirante, puntaje).then((response) => {
       historialAspirantesRepository.buildInsert(req, response);
       res.send(response);
     });

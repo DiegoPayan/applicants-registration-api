@@ -185,19 +185,45 @@ export class AspirantesRepository {
     return response;
   }
 
-  async update(id: Number, aspirante: Aspirantes): Promise<Response> {
+  async update(id: Number, aspirante: Aspirantes, puntaje: Puntaje): Promise<Response> {
     let response = new Response();
-    let preConsultaAspirante = await getManager().getRepository(Aspirantes).findOne({ id });
-    let resultadoAspirante = await getManager().getRepository(Aspirantes).update({ id }, aspirante);
-    let postConsultaAspirante = await getManager().getRepository(Aspirantes).findOne({ id });
+    let preConsultaAspirante;
+    let resultadoAspirante;
+    let postConsultaAspirante;
+    let idPuntaje;
+    let preConsultaPuntaje;
+    let resultadoPuntaje;
+    let postConsultaPuntaje
     let modificaciones = [];
-    await Object.entries(preConsultaAspirante).forEach(([key, value]) => {
-      if (postConsultaAspirante[key].toString() != value.toString()) {
-        modificaciones.push({ [key]: [value, postConsultaAspirante[key]] });
-      }
-    });
+
+    if (aspirante && !isObjectEmpty(aspirante)) {
+      preConsultaAspirante = await getManager().getRepository(Aspirantes).findOne({ id });
+      resultadoAspirante = await getManager().getRepository(Aspirantes).update({ id }, aspirante);
+      postConsultaAspirante = await getManager().getRepository(Aspirantes).findOne({ id });
+      idPuntaje = preConsultaAspirante.idPuntaje;
+
+      await Object.entries(preConsultaAspirante).forEach(([key, value]) => {
+        if (postConsultaAspirante[key].toString() != value.toString()) {
+          modificaciones.push({ [key]: [value, postConsultaAspirante[key]] });
+        }
+      });
+    }
+
+    if (puntaje && !isObjectEmpty(puntaje)) {
+      preConsultaPuntaje = await getManager().getRepository(Puntaje).findOne({ where: { id: idPuntaje } });
+      resultadoPuntaje = await getManager().getRepository(Puntaje).update({ id: idPuntaje }, puntaje);
+      postConsultaPuntaje = await getManager().getRepository(Puntaje).findOne({ where: { id: idPuntaje } });
+
+      await Object.entries(preConsultaPuntaje).forEach(([key, value]) => {
+        if (postConsultaPuntaje[key].toString() != value.toString()) {
+          modificaciones.push({ [key]: [value, postConsultaPuntaje[key]] });
+        }
+      });
+    }
+
     modificaciones.unshift({ idAspirante: id });
-    if (resultadoAspirante) {
+
+    if (resultadoAspirante || resultadoPuntaje) {
       response.data = modificaciones;
       response.message = message.SUCCESS_UPDATE_ASPIRANTE;
       response.status = 200;
@@ -241,9 +267,9 @@ export class AspirantesRepository {
     }
 
     let consultaConfiguracion = await getManager().getRepository(Configuracion).find();
-    consultaConfiguracion.sort((a,b) => {
-      if(a.orden < b.orden) return -1;
-      if(a.orden > b.orden) return 1;
+    consultaConfiguracion.sort((a, b) => {
+      if (a.orden < b.orden) return -1;
+      if (a.orden > b.orden) return 1;
     });
 
     worksheet = this.genExcelContent(tipoLista, workbook, list, worksheet, subcomision, 0, consultaConfiguracion);

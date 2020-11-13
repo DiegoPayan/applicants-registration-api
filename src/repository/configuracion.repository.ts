@@ -23,9 +23,11 @@ export class ConfiguracionRepository {
     let response = new Response();
     await getManager().query('TRUNCATE TABLE configuracion_firmas');
     await getManager().query('ALTER TABLE configuracion_firmas AUTO_INCREMENT = 1');
-    configuracion.forEach(async element => {
-      await getManager().getRepository(Configuracion).save(element);
-    });
+    if (configuracion.length > 0) {
+      configuracion.forEach(async element => {
+        await getManager().getRepository(Configuracion).save(element);
+      });
+    }
     let consultaConfiguracion = await getManager().getRepository(Configuracion).find();
     if (consultaConfiguracion) {
       response.message = message.SUCCESS_SAVE;

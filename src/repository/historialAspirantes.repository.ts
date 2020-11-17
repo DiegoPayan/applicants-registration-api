@@ -2,12 +2,21 @@ import { getManager } from 'typeorm';
 import { HistorialAspirantes } from '../entity/historialAspirantes.entity';
 import { Response } from '../dto/response.dto';
 import * as message from '../const/historialAspirantes.const';
+import { Usuarios } from '../entity/usuarios.entity';
+import { HistorialAspirantesJoin } from '../entity/historialAspirantesJoin.entity';
 
 export class HistorialAspirantesRepository {
 
   async getAll(): Promise<Response> {
     let response = new Response();
-    let resultadoHistorial = await getManager().getRepository(HistorialAspirantes).find();
+    let resultadoHistorial = await getManager().getRepository(HistorialAspirantesJoin).find({ relations: ['usuarios'] });
+    resultadoHistorial.map((elem) => {
+      delete elem['usuarios']['id'];
+      delete elem['usuarios']['clave'];
+      delete elem['usuarios']['permisos'];
+      delete elem['usuarios']['fechaCreacion'];
+      delete elem['usuarios']['estatus'];
+    });
     if (resultadoHistorial) {
       response.data = resultadoHistorial;
       response.status = 200;

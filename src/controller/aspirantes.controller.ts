@@ -50,27 +50,31 @@ router.get('/nuevo/folio', (req, res) => {
 router.post('/', (req, res) => {
   let aspirante = req.body.aspirante;
   let puntaje = req.body.puntaje;
-  if (!isObjectEmpty(aspirante)) {
-    aspirantesRepository.save(aspirante, puntaje).then((response) => {
-      res.send(response);
-    });
-  } else {
-    res.send('No se han recibido datos');
+  if (isObjectEmpty(aspirante)) {
+    return res.status(400).send({ message: 'No es posible almacenar aspirantes vacios' });
   }
+  if (isObjectEmpty(puntaje)) {
+    return res.status(400).send({ message: 'No es posible almacenar puntuaciones de aspirantes vacias' });
+  }
+  aspirantesRepository.save(aspirante, puntaje).then((response) => {
+    res.send(response);
+  });
 });
 
 router.put('/:idAspirante', (req, res) => {
   let aspirante = req.body.aspirante;
   let puntaje = req.body.puntaje;
   let id = req.params.idAspirante;
-  if (!isObjectEmpty(aspirante)) {
-    aspirantesRepository.update(id, aspirante, puntaje).then((response) => {
-      historialAspirantesRepository.buildInsert(req, response);
-      res.send(response);
-    });
-  } else {
-    res.send('No se han recibido datos');
+  if (aspirante == undefined || aspirante == null || isObjectEmpty(aspirante)) {
+    return res.status(400).send({ message: 'No es posible actualizar aspirantes vacios' });
   }
+  if (puntaje == undefined || puntaje == null || isObjectEmpty(puntaje)) {
+    return res.status(400).send({ message: 'No es posible actualizar puntuaciones de aspirantes vacias' });
+  }
+  aspirantesRepository.update(id, aspirante, puntaje).then((response) => {
+    historialAspirantesRepository.buildInsert(req, response);
+    res.send(response);
+  });
 });
 
 module.exports = router;

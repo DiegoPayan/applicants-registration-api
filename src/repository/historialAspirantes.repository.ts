@@ -9,13 +9,14 @@ export class HistorialAspirantesRepository {
 
   async getAll(): Promise<Response> {
     let response = new Response();
-    let resultadoHistorial = await getManager().getRepository(HistorialAspirantesJoin).find({ relations: ['usuarios'] });
+    let resultadoHistorial = await getManager().getRepository(HistorialAspirantesJoin).find({ relations: ['usuarios', 'aspirantes'], order: { id: 'DESC' } });
     resultadoHistorial.map((elem) => {
-      delete elem['usuarios']['id'];
-      delete elem['usuarios']['clave'];
-      delete elem['usuarios']['permisos'];
-      delete elem['usuarios']['fechaCreacion'];
-      delete elem['usuarios']['estatus'];
+      Object.keys(elem.usuarios).forEach((itm) => {
+        if (itm != "nombre" && itm != "apellidoPaterno" && itm != "apellidoMaterno") delete elem.usuarios[itm];
+      });
+      Object.keys(elem.aspirantes).forEach((itm) => {
+        if (itm != "nombre" && itm != "apellidoPaterno" && itm != "apellidoMaterno") delete elem.aspirantes[itm];
+      });
     });
     if (resultadoHistorial) {
       response.data = resultadoHistorial;

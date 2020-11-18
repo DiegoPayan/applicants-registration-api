@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 import { PuestosRepository } from '../repository/puesto.repository';
+import { isObjectEmpty } from '../utils/isEmpty';
 
 const puestoRepository = new PuestosRepository();
 
@@ -13,16 +14,22 @@ router.get('/', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-  let estudio = req.body;
-  puestoRepository.save(estudio).then((response) => {
+  let puesto = req.body;
+  if (isObjectEmpty(puesto)) {
+    return res.status(400).send({ message: 'No es posible almacenar puestos vacios' });
+  }
+  puestoRepository.save(puesto).then((response) => {
     res.status(response.status).send(response);
   });
 });
 
 router.put('/:id', (req, res) => {
   let id = req.params.id;
-  let estudio = req.body;
-  puestoRepository.update(id, estudio).then((response) => {
+  let puesto = req.body;
+  if (isObjectEmpty(puesto)) {
+    return res.status(400).send({ message: 'No es posible actualizar puestos vacios' });
+  }
+  puestoRepository.update(id, puesto).then((response) => {
     res.status(response.status).send(response);
   });
 })
